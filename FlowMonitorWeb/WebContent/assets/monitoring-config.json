@@ -1,0 +1,39 @@
+{
+  "version": 3,
+  "defaults": {
+    "warningLeadMinutes": 15,
+    "errorGraceMinutes": 0,
+    "businessEnd": "17:00"
+  },
+  "flows": [
+    {
+      "flowId": "RSF||SAP-ECC||RSFBESTANMIN",
+      "name": "RSF BESTANM IN",
+      "enabled": true,
+      "mode": "intervals",
+      "warningLeadMinutes": 20,
+      "intervals": [
+        {
+          "start": "09:00",
+          "end": "10:15",
+          "expected": 50,
+          "warnAtPct": 0.7,
+          "tolerancePct": 0.05
+        }
+      ]
+    },
+    {
+      "flowId": "SAP-ECC||RSF||RSFBESTANM",
+      "name": "RSF BESTANM UT",
+      "enabled": true,
+      "mode": "exactTimes",
+      "warningLeadMinutes": 10,
+      "times": [
+        {
+          "time": "08:00",
+          "expected": 30
+        }
+      ]
+    }
+  ]
+}

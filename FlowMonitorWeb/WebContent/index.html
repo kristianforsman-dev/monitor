@@ -1,0 +1,137 @@
+
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow Monitor</title>
+  <link rel="stylesheet" href="assets/app.css?v61_20260303132548" />
+  <script>window.__fmExpectedBuild="v61_20260303132548";</script>
+</head>
+<body>
+  <main class="container">
+
+    <!-- Monitoring + Live grouped together -->
+    <section class="panel" id="monPanel">
+      <div class="monHeader">
+        <div class="monLive">
+          <div class="statusPill" aria-live="polite" title="Databaskontakt">
+            <span class="dot" id="liveDot" aria-hidden="true"></span>
+            <span class="statusText" id="liveStatus">Live</span>
+          </div>
+        </div>
+
+        <button class="monToggle" id="monToggle" type="button" aria-expanded="true">
+          <span class="monTitle srOnly">Monitoring</span>
+          <span class="monPills">
+            <span class="pill err" id="monErr">0</span>
+            <span class="pill war" id="monWar">0</span>
+            <span class="pill inf" id="monInf">0</span>
+          </span>
+          <span class="chev" aria-hidden="true"></span>
+        </button>
+
+        <div class="monBtns">
+          <button class="btn" id="monShowAll" type="button">Alla</button>
+          <button class="btn" id="monShowIssues" type="button">Endast fel</button>
+        </div>
+      </div>
+
+      <div class="monBody" id="monListWrap">
+        <div class="monList" id="monList"></div>
+      </div>
+    </section>
+
+    <!-- Flows table (controls belong to this card header) -->
+    <section class="card">
+      <div class="cardHeader controlsHeader">
+        <div class="controlsRow">
+          <div class="controlsLeft">
+            <div class="filters" aria-label="Filter">
+              <div class="dd" data-dd="sender">
+                <button class="ddBtn" type="button"><span class="ddLabel">Sender</span><span class="ddCaret" aria-hidden="true"></span></button>
+                <div class="ddMenu" role="menu">
+                  <input class="ddSearch" data-dd-search type="search" placeholder="Sök…" autocomplete="off" />
+                  <div class="ddList" data-dd-list></div>
+                </div>
+              </div>
+
+              <div class="dd" data-dd="receiver">
+                <button class="ddBtn" type="button"><span class="ddLabel">Receiver</span><span class="ddCaret" aria-hidden="true"></span></button>
+                <div class="ddMenu" role="menu">
+                  <input class="ddSearch" data-dd-search type="search" placeholder="Sök…" autocomplete="off" />
+                  <div class="ddList" data-dd-list></div>
+                </div>
+              </div>
+
+              <div class="dd" data-dd="msgType">
+                <button class="ddBtn" type="button"><span class="ddLabel">Typ</span><span class="ddCaret" aria-hidden="true"></span></button>
+                <div class="ddMenu" role="menu">
+                  <input class="ddSearch" data-dd-search type="search" placeholder="Sök…" autocomplete="off" />
+                  <div class="ddList" data-dd-list></div>
+                </div>
+              </div>
+
+              <div class="dd" data-dd="state">
+                <button class="ddBtn" type="button"><span class="ddLabel">State</span><span class="ddCaret" aria-hidden="true"></span></button>
+                <div class="ddMenu" role="menu">
+                  <input class="ddSearch" data-dd-search type="search" placeholder="Sök…" autocomplete="off" />
+                  <div class="ddList" data-dd-list></div>
+                </div>
+              </div>
+              <span id="queryStatus" class="queryStatus" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="controlsRight">
+            
+            <div class="dateRange" aria-label="Datumintervall">
+              <button class="btn preset" type="button" data-range="1d">1d</button>
+              <button class="btn preset" type="button" data-range="7d">7d</button>
+              <button class="btn preset" type="button" data-range="30d">30d</button>
+              <input id="dateFrom" class="dateInput" type="date" aria-label="Från datum" />
+              <span class="dateSep" aria-hidden="true">–</span>
+              <input id="dateTo" class="dateInput" type="date" aria-label="Till datum" />
+            </div>
+<div class="searchWrap">
+              <input id="q" class="search" type="search" placeholder="Sök…" autocomplete="off" />
+            </div>
+            <button class="btn" id="btnClearAll" type="button">Rensa</button>
+          </div>
+        </div>
+
+        <div class="chips" id="chipRow" aria-label="Valda filter"></div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="flows" class="table">
+          <thead>
+            <tr>
+              <th class="sortable" data-key="sender">Sender</th>
+              <th class="sortable" data-key="receiver">Receiver</th>
+              <th class="sortable" data-key="msgType">Typ</th>
+              <th class="sortable" data-key="state">State</th>
+              <th class="sortable num" data-key="count">Count</th>
+            </tr>
+          </thead>
+          <tbody id="statusBody">
+            <tr><td colspan="5" class="placeholder">Loading…</td></tr>
+          </tbody>
+        </table>
+<div class="tableFooter">
+  <div id="loadMoreWrap" class="footerBar" aria-live="polite">
+    <div class="footerLeft"></div>
+    <span id="lmInfo" class="lmInfo">0–0 av 0</span>
+    <button type="button" id="btnLoadMore" class="btn small footerBtn" onclick="return window.fmLoadMore && window.fmLoadMore();" >Visa fler</button>
+  </div>
+</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="assets/app.js?v61_20260303132548"></script>
+</body>
+</html>
+

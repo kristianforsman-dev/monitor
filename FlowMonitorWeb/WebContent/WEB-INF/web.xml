@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+
+  <display-name>FlowMonitorWeb</display-name>
+
+  <!-- Startar pollern som bygger snapshots i minne -->
+  <listener>
+    <listener-class>se.apendo.flowmon.bootstrap.AppBootstrapListener</listener-class>
+  </listener>
+
+  <!-- Snapshot endpoint -->
+  <servlet>
+    <servlet-name>ApiSummaryServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiSummaryServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiSummaryServlet</servlet-name>
+    <url-pattern>/api/summary</url-pattern>
+  </servlet-mapping>
+
+  <!-- Long-poll endpoint (Servlet 3.0 async) -->
+  <servlet>
+    <servlet-name>ApiLongPollServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiLongPollServlet</servlet-class>
+    <async-supported>true</async-supported>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiLongPollServlet</servlet-name>
+    <url-pattern>/api/longpoll</url-pattern>
+  </servlet-mapping>
+
+  <!-- Diag endpoint -->
+  <servlet>
+    <servlet-name>ApiDiagServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiDiagServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiDiagServlet</servlet-name>
+    <url-pattern>/api/diag</url-pattern>
+  </servlet-mapping>
+
+  <!-- Running endpoint (cachead från poller) -->
+  <servlet>
+    <servlet-name>ApiRunningServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiRunningServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiRunningServlet</servlet-name>
+    <url-pattern>/api/running</url-pattern>
+  </servlet-mapping>
+
+  <!-- Stopped endpoint (cachead från poller) -->
+  <servlet>
+    <servlet-name>ApiStoppedServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiStoppedServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiStoppedServlet</servlet-name>
+    <url-pattern>/api/stopped</url-pattern>
+  </servlet-mapping>
+
+  <!-- Monitoring endpoint -->
+  <servlet>
+    <servlet-name>ApiMonitoringServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiMonitoringServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiMonitoringServlet</servlet-name>
+    <url-pattern>/api/monitoring</url-pattern>
+  </servlet-mapping>
+
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <error-page>
+    <error-code>404</error-code>
+    <location>/error.html</location>
+  </error-page>
+
+<!-- Added 2026-02-19 Finished endpoint -->
+<servlet>
+  <servlet-name>ApiFinishedServlet</servlet-name>
+  <servlet-class>se.apendo.flowmon.web.ApiFinishedServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>ApiFinishedServlet</servlet-name>
+  <url-pattern>/api/finished</url-pattern>
+</servlet-mapping>
+
+  <!-- Health endpoint (DB probe) -->
+  <servlet>
+    <servlet-name>ApiHealthServlet</servlet-name>
+    <servlet-class>se.apendo.flowmon.web.ApiHealthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ApiHealthServlet</servlet-name>
+    <url-pattern>/api/health</url-pattern>
+  </servlet-mapping>
+
+<!-- Add to web.xml -->
+<servlet>
+  <servlet-name>ApiRangeServlet</servlet-name>
+  <servlet-class>se.apendo.flowmon.web.ApiRangeServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+  <servlet-name>ApiRangeServlet</servlet-name>
+  <url-pattern>/api/range</url-pattern>
+</servlet-mapping>
+
+<servlet>
+  <servlet-name>ApiMonitoringConfigServlet</servlet-name>
+  <servlet-class>se.apendo.flowmon.web.ApiMonitoringConfigServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+  <servlet-name>ApiMonitoringConfigServlet</servlet-name>
+  <url-pattern>/api/monitoring-config</url-pattern>
+</servlet-mapping>
+
+</web-app>

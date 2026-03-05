@@ -1,0 +1,14 @@
+{
+  "flows": [
+    {
+      "id": "EXEMPEL_1",
+      "sender": "SENDER_A",
+      "receiver": "RECEIVER_B",
+      "msgType": "TYPE_X",
+      "expectations": {
+        "interval": { "minutes": 60, "minCount": 1 },
+        "failed": { "alarm": true }
+      }
+    }
+  ]
+}
