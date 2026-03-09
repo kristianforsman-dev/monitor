@@ -28,6 +28,7 @@ import se.apendo.flowmon.core.Models.CheckRow;
 import se.apendo.flowmon.core.Models.FailedRow;
 import se.apendo.flowmon.core.Models.LiveRow;
 import se.apendo.flowmon.core.Models.Snapshot;
+import se.apendo.flowmon.core.FlowIds;
 
 /**
  * Pollar DB2 via JNDI jdbc/WPSDMP och bygger en Snapshot i minnet.
@@ -257,9 +258,7 @@ public long getFinishedToday(String flowId) {
             LocalTime lt = fi.completed.toLocalDateTime().atZone(ZONE).toLocalTime();
             int idx = bucketIndex(lt);
 
-            String flowId = (fi.sender == null ? "" : fi.sender.trim())
-                    + "||" + (fi.receiver == null ? "" : fi.receiver.trim())
-                    + "||" + (fi.msgType == null ? "" : fi.msgType.trim());
+            String flowId = FlowIds.build(fi.sender, fi.receiver, fi.msgType);
 
             int[] arr = finishedBuckets5m.get(flowId);
             if (arr == null) {
