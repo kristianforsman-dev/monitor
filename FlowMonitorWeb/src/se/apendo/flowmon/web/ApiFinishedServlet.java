@@ -1,5 +1,8 @@
 package se.apendo.flowmon.web;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +28,28 @@ public class ApiFinishedServlet extends HttpServlet {
     SafeJsonWriter jw = null;
     try {
       jw = new SafeJsonWriter(resp.getWriter());
+
+      // Live endpoints are today-only. Accept no range or exactly today..today.
+      String fromS = req.getParameter("from");
+      String toS   = req.getParameter("to");
+      try {
+        LocalDate today = LocalDate.now(java.time.ZoneId.of("Europe/Stockholm"));
+        if ((fromS != null && !fromS.trim().isEmpty()) || (toS != null && !toS.trim().isEmpty())) {
+          LocalDate from = (fromS == null || fromS.trim().isEmpty()) ? today : LocalDate.parse(fromS.trim());
+          LocalDate to   = (toS == null || toS.trim().isEmpty()) ? today : LocalDate.parse(toS.trim());
+          if (!today.equals(from) || !today.equals(to)) {
+            resp.setStatus(400);
+            jw.beginObject().name("error").value("Endpointen stödjer endast dagens datum (from=today&to=today).").endObject();
+            jw.flush();
+            return;
+          }
+        }
+      } catch (DateTimeParseException dtpe) {
+        resp.setStatus(400);
+        jw.beginObject().name("error").value("Ogiltigt datumformat. Använd YYYY-MM-DD.").endObject();
+        jw.flush();
+        return;
+      }
 
       ServletContext ctx = req.getServletContext();
       PollerService poller = (PollerService) ctx.getAttribute(PollerService.CTX_KEY);

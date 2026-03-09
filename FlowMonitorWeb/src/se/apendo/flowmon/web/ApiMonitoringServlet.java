@@ -6,10 +6,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -51,6 +53,20 @@ public class ApiMonitoringServlet extends HttpServlet {
     SafeJsonWriter jw = null;
     try {
       jw = new SafeJsonWriter(resp.getWriter());
+
+      // Frontend may send from/to, but monitoring status must not depend on GUI-selected range.
+      // Only validate input format so the endpoint contract stays predictable.
+      String fromS = req.getParameter("from");
+      String toS   = req.getParameter("to");
+      try {
+        if (fromS != null && !fromS.trim().isEmpty()) LocalDate.parse(fromS.trim());
+        if (toS != null && !toS.trim().isEmpty()) LocalDate.parse(toS.trim());
+      } catch (DateTimeParseException dtpe) {
+        resp.setStatus(400);
+        jw.beginObject().name("error").value("Ogiltigt datumformat. Använd YYYY-MM-DD.").endObject();
+        jw.flush();
+        return;
+      }
 
       ServletContext ctx = req.getServletContext();
       PollerService poller = (PollerService) ctx.getAttribute(PollerService.CTX_KEY);
