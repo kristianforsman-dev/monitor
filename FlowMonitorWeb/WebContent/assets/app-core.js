@@ -89,13 +89,22 @@
   };
 
   // network helper
-  FM.fetchRows = async function(endpoint){
+  FM.fetchRows = async function(endpoint, opts){
     try{
-      var res = await fetch(endpoint, { cache: 'no-store' });
+      var fetchOpts = { cache: 'no-store' };
+      if(opts){
+        for(var k in opts){
+          if(Object.prototype.hasOwnProperty.call(opts, k)){
+            fetchOpts[k] = opts[k];
+          }
+        }
+      }
+      var res = await fetch(endpoint, fetchOpts);
       if(!res.ok) return [];
       var data = await res.json();
       return FM.rows(data);
     }catch(e){
+      if(e && e.name === 'AbortError') throw e;
       return [];
     }
   };

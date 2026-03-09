@@ -199,7 +199,9 @@ function scheduleRangeRefresh(){
   // Prevent out-of-order async responses from overwriting newer data
   var __refreshSeq = 0;
 
-  async function pollHealth(){
+  
+    var __refreshAbort = null;
+async function pollHealth(){
     try{
       var h = await fetch('api/health', { cache:'no-store' });
       FM.setLiveStatus(!!(h && h.ok), (h && h.ok) ? 'Live' : 'Offline');
@@ -208,50 +210,75 @@ function scheduleRangeRefresh(){
     }
   }
 
-  async function fetchRangeView(rSel){
+  async function fetchRangeView(rSel, signal){
     // /api/range?from=YYYY-MM-DD&to=YYYY-MM-DD
     var ep='api/range?from='+encodeURIComponent(rSel.from)+'&to='+encodeURIComponent(rSel.to);
-    return await FM.fetchRows(ep);
+    return await FM.fetchRows(ep, { signal: signal });
   }
 
   async function refreshNow(){
-    var seq = ++__refreshSeq;
-    var tbody=document.getElementById('statusBody');
-    if(tbody && (!FM.state.data || !FM.state.data.length)){
-      tbody.innerHTML='<tr><td colspan="5" class="placeholder">Loading…</td></tr>';
-    }
+      // Abort any in-flight refresh so old responses can't land after a click
+      try{ if(__refreshAbort) __refreshAbort.abort(); }catch(e){}
+      __refreshAbort = (w.AbortController ? new AbortController() : null);
+      var signal = __refreshAbort ? __refreshAbort.signal : undefined;
 
-    // health should never break table
-    pollHealth();
-
-    try{
-      var rSel = readSelectedRange();
-      debugSet('Range: '+rSel.from+'..'+rSel.to+' ('+(isTodayRange(rSel)?'live':'range')+') …');
-      var view;
-      if(!isTodayRange(rSel)){
-        view = await fetchRangeView(rSel);
-      }else{
-        var parts = await Promise.all([
-          FM.fetchRows('api/running'),
-          FM.fetchRows('api/stopped'),
-          FM.fetchRows('api/finished')
-        ]);
-        var running=parts[0]||[], stopped=parts[1]||[], finished=parts[2]||[];
-        var stopSet = new Set(stopped.map(FM.rowKeyBase || FM.rowKey));
-        var runOnly = running.filter(function(r){ return !stopSet.has((FM.rowKeyBase||FM.rowKey)(r)); });
-        view = runOnly.concat(finished, stopped);
+      var seq = ++__refreshSeq;
+      var tbody=document.getElementById('statusBody');
+      if(tbody && (!FM.state.data || !FM.state.data.length)){
+        tbody.innerHTML='<tr><td colspan="5" class="placeholder">Loading...</td></tr>';
       }
 
-      if(seq !== __refreshSeq) return;
-      debugSet('Range: '+rSel.from+'..'+rSel.to+' ('+(isTodayRange(rSel)?'live':'range')+'), rows='+ (view?view.length:0));
-      FM.Table.setData(view);
-    }catch(e){
-      try{ console.error('refresh failed', e); }catch(ignore){}
-      // keep old data
-    }
-  }
+      // health should never break table
+      pollHealth();
 
-  // ---- init wiring ----
+      try{
+        var rSel = readSelectedRange();
+        debugSet('Range: '+rSel.from+'..'+rSel.to+' ('+(isTodayRange(rSel)?'live':'range')+') ...');
+
+        var view;
+        if(!isTodayRange(rSel)){
+          view = await fetchRangeView(rSel, signal);
+        }else{
+          // Always include range params (today) so backend logs & behavior are consistent
+          var qp='?from='+encodeURIComponent(rSel.from)+'&to='+encodeURIComponent(rSel.to);
+
+          var parts = await Promise.all([
+            FM.fetchRows('api/running'+qp,  { signal: signal }),
+            FM.fetchRows('api/stopped'+qp,  { signal: signal }),
+            FM.fetchRows('api/finished'+qp, { signal: signal })
+          ]);
+
+          var running=parts[0]||[], stopped=parts[1]||[], finished=parts[2]||[];
+          var keyFn = FM.rowKeyBase || FM.rowKey;
+
+          var stopSet = new Set(stopped.map(keyFn));
+          var runOnly = running.filter(function(r){ return !stopSet.has(keyFn(r)); });
+
+          view = runOnly.concat(finished, stopped);
+        }
+
+        if(seq !== __refreshSeq) return;
+
+        debugSet('Range: '+rSel.from+'..'+rSel.to+' ('+(isTodayRange(rSel)?'live':'range')+'), rows='+(view?view.length:0));
+        FM.Table.setData(view);
+
+        if(FM.Monitor && FM.Monitor.fetch){
+          try{
+            var md = await FM.Monitor.fetch();
+            if(md){
+              FM.Monitor.state.data = md;
+              if(FM.Monitor.render) FM.Monitor.render();
+            }
+          }catch(ignore){}
+        }
+      }catch(e){
+        if(e && (e.name === 'AbortError')) return;
+        try{ console.error('refresh failed', e); }catch(ignore){}
+      }
+}
+
+
+    // ---- init wiring ----
   function init(){
     // query input
     var q=document.getElementById('q');
@@ -287,12 +314,21 @@ function scheduleRangeRefresh(){
     for(var i=0;i<btns.length;i++){
       (function(b){
         if(b.__wired) return;
-        b.__wired=true;
-        b.addEventListener('click', function(e){
-          e.preventDefault();
-          var p=b.getAttribute('data-range') || b.getAttribute('data-preset');
-          w.fmPreset(p);
-        });
+
+          // If HTML already has inline onclick (e.g. onclick="fmPreset('7d')"),
+          // do NOT wire a second handler (causes double refresh / "two clicks").
+          if(b.getAttribute('onclick') || typeof b.onclick === 'function'){
+            b.__wired = true;
+            return;
+          }
+
+          b.__wired=true;
+          b.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var p=b.getAttribute('data-range') || b.getAttribute('data-preset');
+            w.fmPreset(p);
+          });
       })(btns[i]);
     }
 
@@ -305,20 +341,6 @@ function scheduleRangeRefresh(){
     refreshNow();
     setInterval(refreshNow, 30000);
     setInterval(pollHealth, 10000);
-
-    // monitoring poll (lightweight)
-    setInterval(async function(){
-      if(!FM.Monitor) return;
-      var d = await FM.Monitor.fetch();
-      if(d){ FM.Monitor.state.data=d; FM.Monitor.render(); }
-    }, 30000);
-
-    (async function(){
-      if(FM.Monitor){
-        var d = await FM.Monitor.fetch();
-        if(d){ FM.Monitor.state.data=d; FM.Monitor.render(); }
-      }
-    })();
   }
 
   init();

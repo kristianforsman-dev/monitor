@@ -7,6 +7,13 @@
   var Monitor = FM.Monitor = FM.Monitor || {};
   Monitor.state = Monitor.state || { onlyIssues:false, data:null, open:true };
 
+    // Icons are optional; never let missing icons break rendering
+    var MonitorIcons = w.MonitorIcons || (w.MonitorIcons = {
+      link: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M10 14a4 4 0 0 1 0-8h4a4 4 0 1 1 0 8h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 10a4 4 0 0 1 0 8H10a4 4 0 1 1 0-8h1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+      edit: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 20h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    });
+
+
   var LS_MON_OPEN = 'flowmonitor.monOpen';
 
   function loadOpen(){
@@ -149,7 +156,23 @@
 
   Monitor.fetch = async function(){
     try{
-      var res = await fetch('api/monitoring', { cache:'no-store' });
+      var from = '';
+      var to = '';
+      try{
+        var raw = localStorage.getItem(FM.STORAGE_RANGE) || '';
+        var r = FM.parseRange ? FM.parseRange(raw) : null;
+        if(r && r.from && r.to){
+          from = r.from;
+          to = r.to;
+        }
+      }catch(ignore){}
+
+      var ep = 'api/monitoring';
+      if(from && to){
+        ep += '?from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to);
+      }
+
+      var res = await fetch(ep, { cache:'no-store' });
       if(!res.ok) return null;
       return await res.json();
     }catch(e){
