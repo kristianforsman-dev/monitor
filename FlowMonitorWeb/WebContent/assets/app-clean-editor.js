@@ -184,6 +184,141 @@
     host.innerHTML = html;
   };
 
+
+  Editor.renderWeekdayRows = function(items){
+    items = Array.isArray(items) ? items.slice() : [];
+    if(!items.length) items = [{ weekday:1, expected:'', dueTime:'', carryOverMode:'sameDay' }];
+
+    var host = Util.byId('fmMonWeekdaysGrid');
+    if(!host) return;
+
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="weekday">'
+        + '  <select class="fmSelect fmWeekdayVal">'
+        + '    <option value="1"' + (Number(it.weekday)===1?' selected':'') + '>Måndag</option>'
+        + '    <option value="2"' + (Number(it.weekday)===2?' selected':'') + '>Tisdag</option>'
+        + '    <option value="3"' + (Number(it.weekday)===3?' selected':'') + '>Onsdag</option>'
+        + '    <option value="4"' + (Number(it.weekday)===4?' selected':'') + '>Torsdag</option>'
+        + '    <option value="5"' + (Number(it.weekday)===5?' selected':'') + '>Fredag</option>'
+        + '    <option value="6"' + (Number(it.weekday)===6?' selected':'') + '>Lördag</option>'
+        + '    <option value="7"' + (Number(it.weekday)===7?' selected':'') + '>Söndag</option>'
+        + '  </select>'
+        + '  <input class="fmInput fmWeekdayExpected" type="number" step="1" value="' + Util.esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <input class="fmInput fmWeekdayDueTime" type="time" value="' + Util.esc(it.dueTime || '') + '">'
+        + '  <select class="fmSelect fmWeekdayCarry">'
+        + '    <option value="sameDay"' + (String(it.carryOverMode||'sameDay')==='sameDay'?' selected':'') + '>sameDay</option>'
+        + '    <option value="nextBusinessDayMorning"' + (String(it.carryOverMode||'sameDay')==='nextBusinessDayMorning'?' selected':'') + '>nextBusinessDayMorning</option>'
+        + '  </select>'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.renderMonthDayRows = function(items){
+    items = Array.isArray(items) ? items.slice() : [];
+    if(!items.length) items = [{ day:1, expected:'', dueTime:'', carryOverMode:'sameDay' }];
+
+    var host = Util.byId('fmMonMonthDaysGrid');
+    if(!host) return;
+
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="monthDay">'
+        + '  <input class="fmInput fmMonthDayVal" type="number" min="1" max="31" step="1" value="' + Util.esc(it.day == null ? '' : it.day) + '">'
+        + '  <input class="fmInput fmMonthDayExpected" type="number" step="1" value="' + Util.esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <input class="fmInput fmMonthDayDueTime" type="time" value="' + Util.esc(it.dueTime || '') + '">'
+        + '  <select class="fmSelect fmMonthDayCarry">'
+        + '    <option value="sameDay"' + (String(it.carryOverMode||'sameDay')==='sameDay'?' selected':'') + '>sameDay</option>'
+        + '    <option value="nextBusinessDayMorning"' + (String(it.carryOverMode||'sameDay')==='nextBusinessDayMorning'?' selected':'') + '>nextBusinessDayMorning</option>'
+        + '  </select>'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.renderDateRows = function(items){
+    items = Array.isArray(items) ? items.slice() : [];
+    if(!items.length) items = [{ date:'', expected:'', dueTime:'', carryOverMode:'sameDay' }];
+
+    var host = Util.byId('fmMonDatesRows');
+    if(!host) return;
+
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="date">'
+        + '  <input class="fmInput fmDateVal" type="date" value="' + Util.esc(it.date || '') + '">'
+        + '  <input class="fmInput fmDateExpected" type="number" step="1" value="' + Util.esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <input class="fmInput fmDateDueTime" type="time" value="' + Util.esc(it.dueTime || '') + '">'
+        + '  <select class="fmSelect fmDateCarry">'
+        + '    <option value="sameDay"' + (String(it.carryOverMode||'sameDay')==='sameDay'?' selected':'') + '>sameDay</option>'
+        + '    <option value="nextBusinessDayMorning"' + (String(it.carryOverMode||'sameDay')==='nextBusinessDayMorning'?' selected':'') + '>nextBusinessDayMorning</option>'
+        + '  </select>'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.collectWeekdayRows = function(){
+    var host = Util.byId('fmMonWeekdaysGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="weekday"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        weekday: Number(((r.querySelector('.fmWeekdayVal') || {}).value) || 0),
+        expected: Number(((r.querySelector('.fmWeekdayExpected') || {}).value) || 0),
+        dueTime: (r.querySelector('.fmWeekdayDueTime') || {}).value || '',
+        carryOverMode: (r.querySelector('.fmWeekdayCarry') || {}).value || 'sameDay'
+      });
+    }
+    return out;
+  };
+
+  Editor.collectMonthDayRows = function(){
+    var host = Util.byId('fmMonMonthDaysGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="monthDay"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        day: Number(((r.querySelector('.fmMonthDayVal') || {}).value) || 0),
+        expected: Number(((r.querySelector('.fmMonthDayExpected') || {}).value) || 0),
+        dueTime: (r.querySelector('.fmMonthDayDueTime') || {}).value || '',
+        carryOverMode: (r.querySelector('.fmMonthDayCarry') || {}).value || 'sameDay'
+      });
+    }
+    return out;
+  };
+
+  Editor.collectDateRows = function(){
+    var host = Util.byId('fmMonDatesRows');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="date"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        date: (r.querySelector('.fmDateVal') || {}).value || '',
+        expected: Number(((r.querySelector('.fmDateExpected') || {}).value) || 0),
+        dueTime: (r.querySelector('.fmDateDueTime') || {}).value || '',
+        carryOverMode: (r.querySelector('.fmDateCarry') || {}).value || 'sameDay'
+      });
+    }
+    return out;
+  };
+
   Editor.collectIntervals = function(){
     var host = Util.byId('fmMonIntervalsGrid');
     if(!host) return [];

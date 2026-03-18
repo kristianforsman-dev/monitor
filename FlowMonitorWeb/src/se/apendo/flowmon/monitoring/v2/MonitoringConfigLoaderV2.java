@@ -129,29 +129,62 @@ public final class MonitoringConfigLoaderV2 {
 
         if ("weekdays".equalsIgnoreCase(type)) {
             WeekdaysSchedule s = new WeekdaysSchedule();
-            s.expected = nz(i(m.get("expected")));
-            s.dueTime = parseTime(s(m.get("dueTime")));
-            s.carryOverMode = parseCarryOverMode(s(m.get("carryOverMode")));
-            s.weekdays.addAll(parseWeekdays(m.get("weekdays")));
-            return (s.expected > 0 && !s.weekdays.isEmpty()) ? s : null;
+            List<Object> rules = arr(m.get("rules"));
+            for (Object ro : rules) {
+                Map<String,Object> rm = map(ro);
+                if (rm == null) continue;
+
+                WeekdayRule r = new WeekdayRule();
+                r.weekday = nz(i(rm.get("weekday")));
+                r.expected = nz(i(rm.get("expected")));
+                r.dueTime = parseTime(s(rm.get("dueTime")));
+                r.carryOverMode = parseCarryOverMode(s(rm.get("carryOverMode")));
+
+                if (r.weekday >= 1 && r.weekday <= 7 && r.expected > 0 && r.dueTime != null) {
+                    s.rules.add(r);
+                }
+            }
+            return !s.rules.isEmpty() ? s : null;
         }
 
         if ("monthDays".equalsIgnoreCase(type) || "monthdays".equalsIgnoreCase(type)) {
             MonthDaysSchedule s = new MonthDaysSchedule();
-            s.expected = nz(i(m.get("expected")));
-            s.dueTime = parseTime(s(m.get("dueTime")));
-            s.carryOverMode = parseCarryOverMode(s(m.get("carryOverMode")));
-            s.monthDays.addAll(parseMonthDays(m.get("monthDays")));
-            return (s.expected > 0 && !s.monthDays.isEmpty()) ? s : null;
+            List<Object> rules = arr(m.get("rules"));
+            for (Object ro : rules) {
+                Map<String,Object> rm = map(ro);
+                if (rm == null) continue;
+
+                MonthDayRule r = new MonthDayRule();
+                r.day = nz(i(rm.get("day")));
+                r.expected = nz(i(rm.get("expected")));
+                r.dueTime = parseTime(s(rm.get("dueTime")));
+                r.carryOverMode = parseCarryOverMode(s(rm.get("carryOverMode")));
+
+                if (r.day >= 1 && r.day <= 31 && r.expected > 0 && r.dueTime != null) {
+                    s.rules.add(r);
+                }
+            }
+            return !s.rules.isEmpty() ? s : null;
         }
 
         if ("dates".equalsIgnoreCase(type)) {
             DatesSchedule s = new DatesSchedule();
-            s.expected = nz(i(m.get("expected")));
-            s.dueTime = parseTime(s(m.get("dueTime")));
-            s.carryOverMode = parseCarryOverMode(s(m.get("carryOverMode")));
-            s.dates.addAll(parseDates(m.get("dates")));
-            return (s.expected > 0 && !s.dates.isEmpty()) ? s : null;
+            List<Object> rules = arr(m.get("rules"));
+            for (Object ro : rules) {
+                Map<String,Object> rm = map(ro);
+                if (rm == null) continue;
+
+                DateRule r = new DateRule();
+                r.date = parseDate(s(rm.get("date")));
+                r.expected = nz(i(rm.get("expected")));
+                r.dueTime = parseTime(s(rm.get("dueTime")));
+                r.carryOverMode = parseCarryOverMode(s(rm.get("carryOverMode")));
+
+                if (r.date != null && r.expected > 0 && r.dueTime != null) {
+                    s.rules.add(r);
+                }
+            }
+            return !s.rules.isEmpty() ? s : null;
         }
 
         return null;
@@ -313,5 +346,24 @@ public final class MonitoringConfigLoaderV2 {
     public static final class Config {
         public MonitoringDefaults defaults;
         public List<FlowMonitoringRule> rules;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static Map<String,Object> map(Object o) {
+        return (o instanceof Map) ? (Map<String,Object>) o : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> arr(Object o) {
+        return (o instanceof List) ? (List<Object>) o : new ArrayList<Object>();
+    }
+
+    private static LocalDate parseDate(String s) {
+        try {
+            return (s == null || s.trim().isEmpty()) ? null : LocalDate.parse(s.trim());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

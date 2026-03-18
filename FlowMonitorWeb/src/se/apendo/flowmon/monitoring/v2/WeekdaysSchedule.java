@@ -1,15 +1,10 @@
 package se.apendo.flowmon.monitoring.v2;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class WeekdaysSchedule extends Schedule {
-    public Set<DayOfWeek> weekdays = new HashSet<DayOfWeek>();
-    public int expected;
-    public LocalTime dueTime;
-    public CarryOverMode carryOverMode = CarryOverMode.SAME_DAY;
+public class WeekdaysSchedule extends Schedule {
+    public List<WeekdayRule> rules = new ArrayList<WeekdayRule>();
 
     public WeekdaysSchedule() {
         super(ScheduleType.WEEKDAYS);

@@ -110,26 +110,20 @@ public final class DefaultOccurrenceGenerator implements OccurrenceGenerator {
         MonitoringDefaults defaults
     ) {
         LocalDate d = now.toLocalDate();
-        DayOfWeek dow = d.getDayOfWeek();
-        if (!schedule.weekdays.contains(dow)) return;
+        int dow = d.getDayOfWeek().getValue();
 
-        LocalTime dueTime = schedule.dueTime != null ? schedule.dueTime : defaults.businessEnd;
-        int grace = rule.resolveErrorGraceMinutes(defaults);
+        for (WeekdayRule wr : schedule.rules) {
+            if (wr == null) continue;
+            if (wr.weekday != dow) continue;
 
-        ExpectedOccurrence occ = new ExpectedOccurrence();
-        occ.flowId = rule.flowId;
-        occ.scheduleType = ScheduleType.WEEKDAYS;
-        occ.businessDate = d;
-        occ.label = dow.toString();
-        occ.exactCount = true;
-        occ.expected = schedule.expected;
-
-        occ.windowStart = ZonedDateTime.of(LocalDateTime.of(d, LocalTime.MIDNIGHT), now.getZone());
-        occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
-        occ.dueAt = occ.windowEnd.plusMinutes(grace);
-        occ.occurrenceId = rule.flowId + "|" + d + "|WEEKDAY";
-
-        out.add(occ);
+            LocalTime dueTime = wr.dueTime != null ? wr.dueTime : defaults.businessEnd;
+            ExpectedOccurrence occ = new ExpectedOccurrence();
+            occ.flowId = rule.flowId;
+            occ.expected = wr.expected;
+            occ.dueAt = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            out.add(occ);
+        }
     }
 
     private void generateMonthDays(
@@ -140,25 +134,20 @@ public final class DefaultOccurrenceGenerator implements OccurrenceGenerator {
         MonitoringDefaults defaults
     ) {
         LocalDate d = now.toLocalDate();
-        if (!schedule.monthDays.contains(Integer.valueOf(d.getDayOfMonth()))) return;
+        int day = d.getDayOfMonth();
 
-        LocalTime dueTime = schedule.dueTime != null ? schedule.dueTime : defaults.businessEnd;
-        int grace = rule.resolveErrorGraceMinutes(defaults);
+        for (MonthDayRule mr : schedule.rules) {
+            if (mr == null) continue;
+            if (mr.day != day) continue;
 
-        ExpectedOccurrence occ = new ExpectedOccurrence();
-        occ.flowId = rule.flowId;
-        occ.scheduleType = ScheduleType.MONTH_DAYS;
-        occ.businessDate = d;
-        occ.label = String.valueOf(d.getDayOfMonth());
-        occ.exactCount = true;
-        occ.expected = schedule.expected;
-
-        occ.windowStart = ZonedDateTime.of(LocalDateTime.of(d, LocalTime.MIDNIGHT), now.getZone());
-        occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
-        occ.dueAt = occ.windowEnd.plusMinutes(grace);
-        occ.occurrenceId = rule.flowId + "|" + d + "|MONTHDAY";
-
-        out.add(occ);
+            LocalTime dueTime = mr.dueTime != null ? mr.dueTime : defaults.businessEnd;
+            ExpectedOccurrence occ = new ExpectedOccurrence();
+            occ.flowId = rule.flowId;
+            occ.expected = mr.expected;
+            occ.dueAt = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            out.add(occ);
+        }
     }
 
     private void generateDates(
@@ -169,24 +158,17 @@ public final class DefaultOccurrenceGenerator implements OccurrenceGenerator {
         MonitoringDefaults defaults
     ) {
         LocalDate d = now.toLocalDate();
-        if (!schedule.dates.contains(d)) return;
+        for (DateRule dr : schedule.rules) {
+            if (dr == null || dr.date == null) continue;
+            if (!dr.date.equals(d)) continue;
 
-        LocalTime dueTime = schedule.dueTime != null ? schedule.dueTime : defaults.businessEnd;
-        int grace = rule.resolveErrorGraceMinutes(defaults);
-
-        ExpectedOccurrence occ = new ExpectedOccurrence();
-        occ.flowId = rule.flowId;
-        occ.scheduleType = ScheduleType.DATES;
-        occ.businessDate = d;
-        occ.label = d.toString();
-        occ.exactCount = true;
-        occ.expected = schedule.expected;
-
-        occ.windowStart = ZonedDateTime.of(LocalDateTime.of(d, LocalTime.MIDNIGHT), now.getZone());
-        occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
-        occ.dueAt = occ.windowEnd.plusMinutes(grace);
-        occ.occurrenceId = rule.flowId + "|" + d + "|DATE";
-
-        out.add(occ);
+            LocalTime dueTime = dr.dueTime != null ? dr.dueTime : defaults.businessEnd;
+            ExpectedOccurrence occ = new ExpectedOccurrence();
+            occ.flowId = rule.flowId;
+            occ.expected = dr.expected;
+            occ.dueAt = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            occ.windowEnd = ZonedDateTime.of(LocalDateTime.of(d, dueTime), now.getZone());
+            out.add(occ);
+        }
     }
 }
