@@ -1,39 +1,195 @@
 {
-  "version": 3,
+  "version": 4,
   "defaults": {
     "warningLeadMinutes": 15,
     "errorGraceMinutes": 0,
-    "businessEnd": "17:00"
+    "businessEnd": "17:00",
+    "timezone": "Europe/Stockholm"
   },
   "flows": [
     {
       "flowId": "RSF||SAP-ECC||RSFBESTANMIN",
       "name": "RSF BESTANM IN",
       "enabled": true,
-      "mode": "intervals",
-      "warningLeadMinutes": 20,
-      "intervals": [
-        {
-          "start": "09:00",
-          "end": "10:15",
-          "expected": 50,
-          "warnAtPct": 0.7,
-          "tolerancePct": 0.05
-        }
-      ]
+      "schedule": {
+        "type": "interval",
+        "intervals": [
+          {
+            "start": "02:15",
+            "end": "05:15",
+            "expected": 12,
+            "warnAtPct": 0.7,
+            "tolerancePct": 0.05
+          }
+        ]
+      },
+      "warningLeadMinutes": 1,
+      "errorGraceMinutes": null
     },
     {
       "flowId": "SAP-ECC||RSF||RSFBESTANM",
       "name": "RSF BESTANM UT",
       "enabled": true,
-      "mode": "exactTimes",
       "warningLeadMinutes": 10,
-      "times": [
-        {
-          "time": "08:00",
-          "expected": 30
-        }
-      ]
+      "schedule": {
+        "type": "exactTimes",
+        "times": [
+          {
+            "time": "12:00",
+            "expected": 2
+          },
+          {
+            "time": "16:14",
+            "expected": 1
+          }
+        ]
+      },
+      "errorGraceMinutes": null
+    },
+    {
+      "flowId": "FLOW||WK||A",
+      "name": "Veckofil",
+      "enabled": true,
+      "schedule": {
+        "type": "weekdays",
+        "expected": 3,
+        "dueTime": "17:00",
+        "carryOverMode": "sameDay",
+        "weekdays": [
+          1,
+          3,
+          7
+        ]
+      },
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null
+    },
+    {
+      "flowId": "FLOW||MD||A",
+      "name": "Månadsfil",
+      "enabled": true,
+      "schedule": {
+        "type": "monthDays",
+        "expected": 2,
+        "dueTime": "17:00",
+        "carryOverMode": "sameDay",
+        "monthDays": [
+          1,
+          2,
+          3,
+          5,
+          11,
+          30
+        ]
+      },
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null
+    },
+    {
+      "flowId": "FLOW||DATE||A",
+      "name": "Årsfil",
+      "enabled": true,
+      "schedule": {
+        "type": "dates",
+        "expected": 1,
+        "dueTime": "17:00",
+        "carryOverMode": "sameDay",
+        "dates": [
+          "2026-03-13",
+          "2026-03-12"
+        ]
+      },
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null
+    },
+    {
+      "name": "RSF BESTANM IN",
+      "enabled": true,
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null,
+      "schedule": {
+        "type": "interval",
+        "intervals": [
+          {
+            "start": "02:15",
+            "end": "05:15",
+            "expected": 500,
+            "warnAtPct": 0.7,
+            "tolerancePct": 0.05
+          },
+          {
+            "start": "10:00",
+            "end": "16:15",
+            "expected": 600,
+            "warnAtPct": 0.75,
+            "tolerancePct": 0.03
+          }
+        ]
+      },
+      "flowId": "RSF||SAP-ECC||RSFBESTANMIN"
+    },
+    {
+      "name": "RSF BESTANM IN",
+      "enabled": true,
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null,
+      "schedule": {
+        "type": "interval",
+        "intervals": [
+          {
+            "start": "02:15",
+            "end": "05:15",
+            "expected": 500,
+            "warnAtPct": 0.7,
+            "tolerancePct": 0.05
+          },
+          {
+            "start": "10:00",
+            "end": "16:15",
+            "expected": 600,
+            "warnAtPct": 0.75,
+            "tolerancePct": 0.03
+          }
+        ]
+      },
+      "flowId": "RSF||SAP-ECC||RSFBESTANMIN"
+    },
+    {
+      "flowId": "dfgdfg||ds||sdfs",
+      "name": "oooo",
+      "enabled": true,
+      "warningLeadMinutes": 2,
+      "errorGraceMinutes": 1,
+      "schedule": {
+        "type": "interval",
+        "intervals": [
+          {
+            "start": "",
+            "end": "",
+            "expected": 0,
+            "warnAtPct": 0.7,
+            "tolerancePct": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "flowId": "EE||EE||RSFBESTANM",
+      "name": "EEE",
+      "enabled": true,
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null,
+      "schedule": {
+        "type": "monthDays",
+        "expected": 2,
+        "dueTime": "07:37",
+        "carryOverMode": "sameDay",
+        "monthDays": [
+          5,
+          13,
+          14
+        ]
+      }
     }
   ]
 }

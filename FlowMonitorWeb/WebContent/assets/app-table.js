@@ -59,12 +59,42 @@ function escapeHtml(str){
 
   function compare(a,b){
     var sort = FM.state.sort || {key:'sender',dir:'asc'};
-    var key=sort.key, dir=(sort.dir==='asc')?1:-1;
-    var av=a[key], bv=b[key];
-    if(key==='count'){ av=Number(av||0); bv=Number(bv||0); return (av-bv)*dir; }
-    av=(av==null?'':String(av)).toLowerCase();
-    bv=(bv==null?'':String(bv)).toLowerCase();
-    if(av<bv) return -1*dir; if(av>bv) return 1*dir; return 0;
+    var key = sort.key, dir = (sort.dir==='asc') ? 1 : -1;
+
+    function cmp(av, bv, k, d){
+      if(k === 'count'){
+        av = Number(av || 0);
+        bv = Number(bv || 0);
+        if(av < bv) return -1 * d;
+        if(av > bv) return  1 * d;
+        return 0;
+      }
+      av = (av == null ? '' : String(av)).toLowerCase();
+      bv = (bv == null ? '' : String(bv)).toLowerCase();
+      if(av < bv) return -1 * d;
+      if(av > bv) return  1 * d;
+      return 0;
+    }
+
+    var c = cmp(a[key], b[key], key, dir);
+    if(c) return c;
+
+    c = cmp(a.sender, b.sender, 'sender', 1);
+    if(c) return c;
+
+    c = cmp(a.receiver, b.receiver, 'receiver', 1);
+    if(c) return c;
+
+    c = cmp(a.msgType, b.msgType, 'msgType', 1);
+    if(c) return c;
+
+    c = cmp(a.state, b.state, 'state', 1);
+    if(c) return c;
+
+    c = cmp(a.count, b.count, 'count', 1);
+    if(c) return c;
+
+    return 0;
   }
 
   function matchesAllFilters(r){
@@ -80,6 +110,8 @@ function escapeHtml(str){
     if(f.state.length && f.state.indexOf(String(r.state||''))===-1) return false;
     return true;
   }
+
+
 
   Table.applySortClasses = function(){
     var table = $('flows');
@@ -157,6 +189,12 @@ function escapeHtml(str){
 
         var tr=document.createElement('tr');
         tr.setAttribute('data-id', id);
+        tr.setAttribute('data-sender', String(r.sender || ''));
+        tr.setAttribute('data-receiver', String(r.receiver || ''));
+        tr.setAttribute('data-msgtype', String(r.msgType || ''));
+        tr.setAttribute('data-state', String(r.state || ''));
+        tr.setAttribute('data-count', String(r.count == null ? '' : r.count));
+        if((FM.state.selectedRowId || '') === id) tr.classList.add('isSelected');
 
         var st=normalizeState(r.state);
         tr.innerHTML =
@@ -164,7 +202,7 @@ function escapeHtml(str){
           '<td class="mono">'+escapeHtml(FM.guiText(r.receiver))+'</td>'+
           '<td>'+escapeHtml(r.msgType)+'</td>'+
           '<td class="state '+escapeHtml(st)+'"><span class="badge">'+escapeHtml(r.state)+'</span></td>'+
-          '<td class="num mono countCell"><span class="countVal">'+escapeHtml(r.count)+'</span><button type="button" class="rowDetailBtn iconBtn" title="Detaljer" aria-label="Detaljer">'+TableIcons.detail+'</button></td>';
+          '<td class="num mono countCell"><span class="countVal">'+escapeHtml(r.count)+'</span></td>';
 
         frag.appendChild(tr);
       }
@@ -211,44 +249,32 @@ var info = $('lmInfo');
     tbody.__wiredDetails = true;
 
     tbody.addEventListener('click', function(e){
-      
-      // Detail icon button
-      try{
-        var b = e.target && (e.target.closest ? e.target.closest('.rowDetailBtn') : null);
-        if(b){
-          var tr = b.closest ? b.closest('tr[data-id]') : null;
-          var id = tr ? tr.getAttribute('data-id') : '';
-          if(window.FM && FM.Detail){
-            // Prefer openRow(row) if implemented, otherwise open(keyOrRow)
-            var rowObj = null;
-            try{
-              if(tr){
-                rowObj = {
-                  sender: tr.getAttribute('data-sender')||'',
-                  receiver: tr.getAttribute('data-receiver')||'',
-                  msgType: tr.getAttribute('data-msgtype')||'',
-                  state: tr.getAttribute('data-state')||'',
-                  count: Number(tr.getAttribute('data-count')||0)
-                };
-              }
-            }catch(ignore3){}
-            if(typeof FM.Detail.openRow==='function') FM.Detail.openRow(rowObj);
-            else if(typeof FM.Detail.open==='function') FM.Detail.open(rowObj || id);
-          }
-          e.preventDefault();
-          e.stopPropagation();
+      var t = e.target;
+      if(t && (t.tagName==='BUTTON' || t.tagName==='A' || t.tagName==='INPUT' || (t.closest && t.closest('button,a,input')))) return;
+
+      while(t && t !== tbody){
+        if(t.tagName === 'TR' && t.getAttribute('data-id')){
+          FM.state.selectedRowId = t.getAttribute('data-id') || '';
+          Table.render();
           return;
         }
-      }catch(ignore){}
-// ignore clicks on inputs/buttons/links inside rows
-      var t = e.target;
-      if(t && (t.tagName==='BUTTON' || t.tagName==='A' || t.tagName==='INPUT' || t.closest && t.closest('button,a,input'))) return;
+        t = t.parentNode;
+      }
+    });
 
-      var tr = t && t.closest ? t.closest('tr[data-id]') : null;
-      if(!tr) return;
-      var id = tr.getAttribute('data-id');
-      if(FM.Detail && FM.Detail.openById){
-        FM.Detail.openById(id);
+    tbody.addEventListener('dblclick', function(e){
+      var t = e.target;
+      while(t && t !== tbody){
+        if(t.tagName === 'TR' && t.getAttribute('data-id')){
+          var id = t.getAttribute('data-id') || '';
+          var row = (FM.state.dataById && FM.state.dataById[id]) ? FM.state.dataById[id] : null;
+          FM.state.selectedRowId = id;
+          Table.render();
+          if(row && FM.Detail && typeof FM.Detail.openRow === 'function') FM.Detail.openRow(row);
+          else if(row && FM.Detail && typeof FM.Detail.open === 'function') FM.Detail.open(row);
+          return;
+        }
+        t = t.parentNode;
       }
     });
   };

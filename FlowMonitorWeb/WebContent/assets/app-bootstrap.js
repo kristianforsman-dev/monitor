@@ -61,13 +61,23 @@
   })();
 
   // ---- range selection ----
-  function todayISO(){
-    // browser-local is ok, server validates anyway
-    var d=new Date();
-    var mm=String(d.getMonth()+1).padStart(2,'0');
-    var dd=String(d.getDate()).padStart(2,'0');
-    return d.getFullYear()+'-'+mm+'-'+dd;
-  }
+    function todayISO(){
+      try{
+        var mockToday = localStorage.getItem('flowmonitor.mockToday') || '';
+        if(mockToday) return String(mockToday);
+      }catch(e){}
+      try{
+        if(w.FM && FM.state && FM.state.mockToday){
+          return String(FM.state.mockToday);
+        }
+      }catch(e){}
+      var d=new Date();
+      var mm=String(d.getMonth()+1).padStart(2,'0');
+      var dd=String(d.getDate()).padStart(2,'0');
+      return d.getFullYear()+'-'+mm+'-'+dd;
+    }
+
+
 
   function readSelectedRange(){
     var raw = localStorage.getItem(FM.STORAGE_RANGE);

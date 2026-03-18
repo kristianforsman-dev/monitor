@@ -109,6 +109,58 @@ body{ margin:0; font-family:var(--sans); color:var(--text); background:var(--bg)
 }
 .monLink:hover{ text-decoration:underline; }
 
+.monMain{
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.monActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  margin-left:auto;
+}
+
+.monActions .monBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:58px;
+  height:22px;
+  box-sizing:border-box;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  text-decoration:none;
+  padding:0;
+  width:26px;
+  min-width:26px;
+  height:26px;
+  border-radius:8px;
+}
+
+.monLink.iconBtn:hover,
+.monEditBtn.iconBtn:hover{
+  text-decoration:none;
+}
+
+.monEditBtn{
+  all:unset;
+}
+
+.monItem{
+  align-items:center;
+}
+
+.svgIcon{
+  width:15px;
+  height:15px;
+  display:block;
+}
+
+
 /* ===== Status pill ===== */
 .statusPill{
   display:inline-flex;
@@ -474,3 +526,1394 @@ thead th{
 
 /* Hide monitor tips text */
 .monTips{ display:none !important; }
+
+
+.monActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  margin-left:auto;
+}
+
+.monMain{
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.monActions .monBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:58px;
+  height:22px;
+  box-sizing:border-box;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  text-decoration:none;
+  padding:0;
+  width:28px;
+  min-width:28px;
+  height:28px;
+  border-radius:8px;
+}
+
+.monEditBtn{
+  all:unset;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.monLink.iconBtn:hover,
+.monEditBtn.iconBtn:hover{
+  text-decoration:none;
+}
+
+.monItem{
+  align-items:center;
+}
+
+.svgIcon{
+  width:15px;
+  height:15px;
+  display:block;
+}
+
+
+.monActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  margin-left:auto;
+}
+
+.monMain{
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.monActions .monBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:58px;
+  height:24px;
+  box-sizing:border-box;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  text-decoration:none;
+  padding:0;
+  width:30px;
+  min-width:30px;
+  height:30px;
+  border-radius:10px;
+}
+
+.monEditBtn{
+  all:unset;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.monLink.iconBtn:hover,
+.monEditBtn.iconBtn:hover{
+  text-decoration:none;
+}
+
+.monItem{
+  align-items:center;
+}
+
+.svgIcon{
+  width:15px;
+  height:15px;
+  display:block;
+}
+
+.monEditorBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.32);
+  backdrop-filter: blur(2px);
+  z-index:9999;
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-end;
+  padding:0;
+}
+
+.monEditorShell{
+  width:min(760px, 100%);
+  max-width:100%;
+  height:100vh;
+  max-height:100vh;
+  margin-left:auto;
+}
+
+.monEditorCard{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  height:100vh;
+  border:1px solid rgba(148,163,184,.18);
+  border-right:none;
+  border-radius:22px 0 0 22px;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
+  box-shadow:
+    -18px 0 40px rgba(15,23,42,.14),
+    -4px 0 12px rgba(15,23,42,.08);
+}
+
+.monEditorHead,
+.monEditorFoot{
+  padding:16px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.monEditorHead{
+  border-bottom:1px solid rgba(148,163,184,.18);
+  background:rgba(255,255,255,.72);
+}
+
+.monEditorFoot{
+  border-top:1px solid rgba(148,163,184,.18);
+  margin-top:auto;
+  background:rgba(255,255,255,.78);
+}
+
+.monEditorTitle{
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:rgba(15,23,42,.96);
+}
+
+.monEditorBody{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  overflow:auto;
+}
+
+.monField{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.monField > span{
+  font-size:12px;
+  font-weight:600;
+  color:rgba(71,85,105,.92);
+}
+
+.monField input[type="text"],
+.monField input[type="number"],
+.monField select,
+.monField textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid rgba(148,163,184,.35);
+  border-radius:12px;
+  padding:11px 13px;
+  font:inherit;
+  color:rgba(15,23,42,.95);
+  background:#fff;
+  outline:none;
+  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.monField input[type="text"]:focus,
+.monField input[type="number"]:focus,
+.monField select:focus,
+.monField textarea:focus{
+  border-color:rgba(99,102,241,.55);
+  box-shadow:0 0 0 4px rgba(99,102,241,.10);
+}
+
+.monField select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(71,85,105,.8) 50%),
+    linear-gradient(135deg, rgba(71,85,105,.8) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size:6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+  padding-right:34px;
+}
+
+.monField textarea{
+  min-height:160px;
+  resize:vertical;
+  line-height:1.45;
+}
+
+.monFieldCheck{
+  flex-direction:row;
+  align-items:center;
+  gap:10px;
+  padding:2px 0;
+}
+
+.monFieldCheck > span{
+  font-size:13px;
+  font-weight:600;
+  color:rgba(15,23,42,.92);
+}
+
+.monEditorError{
+  border:1px solid rgba(239,68,68,.18);
+  background:rgba(239,68,68,.06);
+  color:rgba(185,28,28,.96);
+  border-radius:12px;
+  padding:11px 13px;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.monEditorCloseBtn{
+  width:30px;
+  min-width:30px;
+  height:30px;
+  padding:0;
+  font-size:18px;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:0 14px;
+  border:1px solid rgba(148,163,184,.32);
+  border-radius:12px;
+  background:#fff;
+  color:rgba(15,23,42,.92);
+  font-weight:600;
+  cursor:pointer;
+  transition:background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .02s ease;
+}
+
+.btn:hover{
+  background:rgba(248,250,252,1);
+  border-color:rgba(100,116,139,.35);
+}
+
+.btn:active{
+  transform:translateY(1px);
+}
+
+.btnPrimary{
+  background:linear-gradient(180deg, rgba(79,70,229,.96) 0%, rgba(67,56,202,.96) 100%);
+  border-color:rgba(79,70,229,.92);
+  color:#fff;
+  box-shadow:0 6px 16px rgba(79,70,229,.18);
+}
+
+.btnPrimary:hover{
+  background:linear-gradient(180deg, rgba(67,56,202,.98) 0%, rgba(55,48,163,.98) 100%);
+  border-color:rgba(67,56,202,.96);
+}
+
+.btnPrimary:focus,
+.btn:focus,
+.monEditorCloseBtn:focus{
+  outline:none;
+  box-shadow:0 0 0 4px rgba(99,102,241,.12);
+}
+
+
+
+.monActions{
+  gap:10px;
+}
+
+.monActions .monBadge{
+  min-width:64px;
+  height:24px;
+  border-radius:999px;
+  font-weight:600;
+  letter-spacing:.01em;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  width:30px;
+  min-width:30px;
+  height:30px;
+  border-radius:10px;
+  border-color:rgba(15,23,42,.10);
+  background:rgba(255,255,255,.92);
+}
+
+.monLink.iconBtn:hover,
+.monEditBtn.iconBtn:hover{
+  background:rgba(15,23,42,.05);
+}
+
+
+.monEditorBackdrop{
+  backdrop-filter: blur(4px);
+}
+
+.monEditorCard{
+  width:min(680px, 100vw);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(250,250,252,.98));
+}
+
+.monEditorHead{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:rgba(255,255,255,.88);
+  backdrop-filter: blur(10px);
+}
+
+.monEditorFoot{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  background:rgba(255,255,255,.90);
+  backdrop-filter: blur(10px);
+}
+
+.monEditorBody{
+  gap:18px;
+}
+
+.monField{
+  gap:8px;
+}
+
+.monField > span{
+  font-size:12px;
+  font-weight:600;
+  color:rgba(15,23,42,.68);
+}
+
+.monField input[type="text"],
+.monField input[type="number"],
+.monField select,
+.monField textarea{
+  border:1px solid rgba(15,23,42,.10);
+  border-radius:14px;
+  padding:12px 14px;
+  background:rgba(255,255,255,.94);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+}
+
+.monField textarea{
+  min-height:180px;
+  line-height:1.45;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:12px;
+}
+
+.monField select{
+  appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(15,23,42,.45) 50%),
+    linear-gradient(135deg, rgba(15,23,42,.45) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size:6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+  padding-right:34px;
+}
+
+.monFieldSwitch{
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-between;
+  padding:4px 2px;
+}
+
+.monSwitchWrap{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+}
+
+.monSwitchInput{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.monSwitch{
+  width:46px;
+  height:28px;
+  border-radius:999px;
+  background:rgba(15,23,42,.14);
+  position:relative;
+  transition:background .18s ease;
+  box-shadow: inset 0 1px 2px rgba(15,23,42,.12);
+}
+
+.monSwitch::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(15,23,42,.18);
+  transition:transform .18s ease;
+}
+
+.monSwitchInput:checked + .monSwitch{
+  background:linear-gradient(180deg, rgba(79,70,229,.92), rgba(67,56,202,.96));
+}
+
+.monSwitchInput:checked + .monSwitch::after{
+  transform:translateX(18px);
+}
+
+.monEditorError,
+.monEditorSuccess{
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.monEditorSuccess{
+  border:1px solid rgba(34,197,94,.20);
+  background:rgba(34,197,94,.08);
+  color:rgba(21,128,61,.96);
+}
+
+.monEditorCloseBtn{
+  border-radius:10px;
+}
+
+.btn{
+  min-height:40px;
+  padding:0 16px;
+  border-radius:12px;
+  font-size:14px;
+}
+
+.btnPrimary{
+  background:linear-gradient(180deg, rgba(79,70,229,.95), rgba(67,56,202,.98));
+  border-color:rgba(79,70,229,.32);
+  color:#fff;
+  box-shadow:
+    0 10px 24px rgba(79,70,229,.20),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.btnPrimary:hover{
+  filter:brightness(1.02);
+}
+
+.btnPrimary:disabled{
+  opacity:.72;
+  cursor:wait;
+  box-shadow:none;
+}
+
+.monItem{
+  border-radius:14px;
+  transition:box-shadow .15s ease, border-color .15s ease, transform .08s ease;
+}
+
+.monItem:hover{
+  border-color:rgba(15,23,42,.14);
+  box-shadow:0 6px 18px rgba(15,23,42,.06);
+}
+
+.monName{
+  font-weight:600;
+  color:rgba(15,23,42,.94);
+}
+
+.monMeta{
+  line-height:1.4;
+}
+
+.monActions .monBadge{
+  min-width:68px;
+  height:26px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  width:32px;
+  min-width:32px;
+  height:32px;
+  border-radius:12px;
+  box-shadow:0 1px 0 rgba(255,255,255,.65) inset;
+}
+
+.monLink.iconBtn:hover,
+.monEditBtn.iconBtn:hover{
+  transform:translateY(-1px);
+}
+
+.svgIcon{
+  width:16px;
+  height:16px;
+}
+
+
+
+.monRulesGrid{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:8px;
+}
+
+.monRuleHdr{
+  display:grid;
+  gap:8px;
+  align-items:center;
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.monRuleHdrInterval,
+.monRuleRow[data-kind="interval"]{
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 40px;
+}
+
+.monRuleHdrTime,
+.monRuleRow[data-kind="time"]{
+  grid-template-columns: 1fr 1fr 40px;
+}
+
+.monRuleRow{
+  display:grid;
+  gap:8px;
+  align-items:center;
+}
+
+.monRuleRow input{
+  width:100%;
+}
+
+.monRuleRemoveBtn{
+  height:36px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(15,23,42,.02);
+  cursor:pointer;
+}
+
+.monRuleRemoveBtn:hover{
+  background:var(--hover);
+}
+
+.btnGhost{
+  background:rgba(15,23,42,.02);
+  color:rgba(15,23,42,.86);
+  border:1px solid var(--border);
+}
+
+.btnGhost:hover{
+  background:var(--hover);
+}
+
+
+
+/* ===== Monitoring editor polish ===== */
+.monEditorBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,.44);
+  backdrop-filter: blur(3px);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.monEditorShell{
+  width:min(980px, 100%);
+  max-height:calc(100vh - 48px);
+}
+
+.monEditorCard{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
+  box-shadow:
+    0 24px 70px rgba(15,23,42,.22),
+    0 6px 20px rgba(15,23,42,.10);
+}
+
+.monEditorHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 22px;
+  border-bottom:1px solid rgba(148,163,184,.18);
+  background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,252,.88));
+}
+
+.monEditorTitle{
+  font-size:18px;
+  font-weight:700;
+  color:rgba(15,23,42,.94);
+  letter-spacing:.01em;
+}
+
+.monEditorCloseBtn{
+  width:34px;
+  height:34px;
+  min-width:34px;
+  border-radius:12px;
+  font-size:18px;
+}
+
+.monEditorBody{
+  padding:22px;
+  overflow:auto;
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:16px 18px;
+  background:
+    radial-gradient(circle at top right, rgba(99,102,241,.05), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(14,165,233,.05), transparent 26%);
+}
+
+.monField{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-width:0;
+}
+
+.monField > span{
+  font-size:12px;
+  font-weight:600;
+  color:rgba(71,85,105,.92);
+  letter-spacing:.01em;
+}
+
+.monField input,
+.monField select,
+.monField textarea{
+  width:100%;
+  box-sizing:border-box;
+  min-height:40px;
+  padding:10px 12px;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:12px;
+  background:rgba(255,255,255,.96);
+  color:rgba(15,23,42,.95);
+  outline:none;
+  transition:border-color .14s ease, box-shadow .14s ease, background .14s ease;
+}
+
+.monField textarea{
+  min-height:104px;
+  resize:vertical;
+  line-height:1.45;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:12px;
+}
+
+.monField input:focus,
+.monField select:focus,
+.monField textarea:focus{
+  border-color:rgba(99,102,241,.52);
+  box-shadow:0 0 0 4px rgba(99,102,241,.12);
+  background:#fff;
+}
+
+.monFieldSwitch{
+  justify-content:flex-end;
+}
+
+.monSwitchWrap{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:40px;
+}
+
+.monSwitchInput{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.monSwitch{
+  position:relative;
+  width:46px;
+  height:28px;
+  border-radius:999px;
+  background:rgba(148,163,184,.46);
+  transition:background .16s ease;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+}
+
+.monSwitch::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(15,23,42,.18);
+  transition:transform .16s ease;
+}
+
+.monSwitchInput:checked + .monSwitch{
+  background:rgba(99,102,241,.88);
+}
+
+.monSwitchInput:checked + .monSwitch::after{
+  transform:translateX(18px);
+}
+
+#monFieldIntervals,
+#monFieldTimes,
+#monFieldWeekdays,
+#monFieldMonthDays,
+#monFieldDates{
+  grid-column:1 / -1;
+  padding:14px;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:16px;
+  background:rgba(255,255,255,.68);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.monRuleHdr{
+  display:grid;
+  gap:8px;
+  align-items:center;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:rgba(100,116,139,.92);
+  margin:10px 0 8px;
+}
+
+.monRuleHdrInterval,
+.monRuleRow[data-kind="interval"]{
+  grid-template-columns: 1.05fr 1.05fr 1fr .9fr .9fr 42px;
+}
+
+.monRuleHdrTime,
+.monRuleRow[data-kind="time"]{
+  grid-template-columns: 1.15fr 1fr 42px;
+}
+
+.monRulesGrid{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.monRuleRow{
+  display:grid;
+  gap:8px;
+  align-items:center;
+}
+
+.monRuleRow input{
+  width:100%;
+  min-height:38px;
+  padding:8px 10px;
+  border:1px solid rgba(148,163,184,.24);
+  border-radius:12px;
+  background:#fff;
+  box-sizing:border-box;
+}
+
+.monRuleRow input:focus{
+  border-color:rgba(99,102,241,.52);
+  box-shadow:0 0 0 4px rgba(99,102,241,.10);
+  outline:none;
+}
+
+.monRuleRemoveBtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  border:1px solid rgba(148,163,184,.24);
+  border-radius:12px;
+  background:rgba(255,255,255,.96);
+  color:rgba(185,28,28,.88);
+  cursor:pointer;
+  transition:background .14s ease, transform .14s ease;
+}
+
+.monRuleRemoveBtn:hover{
+  background:rgba(254,242,242,.95);
+  transform:translateY(-1px);
+}
+
+.monEditorFoot{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  padding:16px 22px 20px;
+  border-top:1px solid rgba(148,163,184,.18);
+  background:rgba(248,250,252,.85);
+}
+
+.btn{
+  min-height:38px;
+  padding:0 14px;
+  border-radius:12px;
+  border:1px solid rgba(148,163,184,.24);
+  background:rgba(255,255,255,.94);
+  color:rgba(15,23,42,.88);
+  cursor:pointer;
+  font-weight:600;
+  transition:background .14s ease, border-color .14s ease, transform .14s ease;
+}
+
+.btn:hover{
+  background:#fff;
+  transform:translateY(-1px);
+}
+
+.btnPrimary{
+  background:linear-gradient(180deg, rgba(79,70,229,.96), rgba(67,56,202,.96));
+  border-color:rgba(79,70,229,.86);
+  color:#fff;
+  box-shadow:0 10px 20px rgba(79,70,229,.18);
+}
+
+.btnPrimary:hover{
+  background:linear-gradient(180deg, rgba(67,56,202,.98), rgba(55,48,163,.98));
+}
+
+.btnGhost{
+  background:rgba(255,255,255,.88);
+  color:rgba(15,23,42,.86);
+  border:1px dashed rgba(148,163,184,.40);
+}
+
+.btnGhost:hover{
+  background:#fff;
+  border-style:solid;
+}
+
+.monEditorError,
+.monEditorSuccess{
+  grid-column:1 / -1;
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:13px;
+}
+
+.monEditorError{
+  border:1px solid rgba(239,68,68,.24);
+  background:rgba(254,242,242,.92);
+  color:rgba(153,27,27,.95);
+}
+
+.monEditorSuccess{
+  border:1px solid rgba(34,197,94,.20);
+  background:rgba(240,253,244,.94);
+  color:rgba(22,101,52,.95);
+}
+
+#monCreateBtn{
+  margin-left:8px;
+}
+
+@media (max-width: 860px){
+  .monEditorBody{
+    grid-template-columns:1fr;
+  }
+}
+
+
+
+/* ===== Force monitoring editor drawer behavior ===== */
+#monEditorBackdrop[hidden]{
+  display:none !important;
+}
+
+#monEditorBackdrop{
+  position:fixed !important;
+  inset:0 !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:flex-end !important;
+  padding:0 !important;
+  background:rgba(2,6,23,.32) !important;
+  backdrop-filter:blur(2px) !important;
+  z-index:9999 !important;
+}
+
+#monEditorBackdrop .monEditorShell{
+  width:min(760px, 100%) !important;
+  max-width:100% !important;
+  height:100vh !important;
+  max-height:100vh !important;
+  margin-left:auto !important;
+}
+
+#monEditorBackdrop .monEditorCard{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  height:100vh !important;
+  width:100% !important;
+  border:1px solid rgba(148,163,184,.18) !important;
+  border-right:none !important;
+  border-radius:22px 0 0 22px !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98)) !important;
+  box-shadow:-18px 0 40px rgba(15,23,42,.14), -4px 0 12px rgba(15,23,42,.08) !important;
+}
+
+#monEditorBackdrop .monEditorHead{
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+
+#monEditorBackdrop .monEditorFoot{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+}
+
+
+
+/* ===== Flow table count + detail button ===== */
+.countCell{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  white-space:nowrap;
+}
+
+.countVal{
+  display:inline-block;
+  min-width:20px;
+  text-align:right;
+}
+
+.detailIconBtn{
+  width:28px;
+  height:28px;
+  min-width:28px;
+  padding:0;
+  border-radius:10px;
+  color:rgba(51,65,85,.78);
+  background:rgba(248,250,252,.95);
+  border:1px solid rgba(148,163,184,.24);
+}
+
+.detailIconBtn:hover{
+  background:#fff;
+  color:rgba(15,23,42,.92);
+}
+
+.detailIconBtn .svgIcon{
+  width:15px;
+  height:15px;
+}
+
+/* ===== Detail drawer ===== */
+#fmDetailBackdrop[hidden]{
+  display:none !important;
+}
+
+#fmDetailBackdrop{
+  position:fixed !important;
+  inset:0 !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:flex-end !important;
+  background:rgba(2,6,23,.28) !important;
+  backdrop-filter:blur(2px) !important;
+  z-index:9998 !important;
+}
+
+#fmDetailBackdrop .fmDetailShell{
+  width:min(560px, 100%) !important;
+  max-width:100% !important;
+  height:100vh !important;
+  margin-left:auto !important;
+}
+
+#fmDetailBackdrop .fmDetailCard{
+  display:flex !important;
+  flex-direction:column !important;
+  height:100vh !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98)) !important;
+  border-left:1px solid rgba(148,163,184,.18) !important;
+  box-shadow:-18px 0 40px rgba(15,23,42,.14), -4px 0 12px rgba(15,23,42,.08) !important;
+}
+
+.fmDetailHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 20px;
+  border-bottom:1px solid rgba(148,163,184,.18);
+  background:rgba(255,255,255,.88);
+}
+
+.fmDetailTitle{
+  font-size:18px;
+  font-weight:700;
+  color:rgba(15,23,42,.94);
+}
+
+.fmDetailCloseBtn{
+  width:34px;
+  height:34px;
+  min-width:34px;
+  border-radius:12px;
+  font-size:18px;
+}
+
+.fmDetailBody{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:20px;
+}
+
+.fmDetailGrid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+
+.fmDetailItem{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:12px 14px;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:14px;
+  background:rgba(255,255,255,.82);
+}
+
+.fmDetailLabel{
+  font-size:12px;
+  font-weight:700;
+  color:rgba(100,116,139,.95);
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.fmDetailValue{
+  font-size:14px;
+  color:rgba(15,23,42,.95);
+}
+
+.fmDetailFoot{
+  display:flex;
+  justify-content:flex-end;
+  padding:16px 20px 20px;
+  border-top:1px solid rgba(148,163,184,.18);
+  background:rgba(248,250,252,.86);
+}
+
+
+
+/* ===== Hide legacy inline detail area ===== */
+#detailPane,
+#detailPanel,
+#flowDetail,
+#detailDrawerHost,
+#detailHost,
+.legacyDetail,
+.detailInline,
+.detailPane{
+  display:none !important;
+}
+
+
+
+/* ===== First page / cards ===== */
+.card{
+  border:1px solid rgba(148,163,184,.18) !important;
+  border-radius:20px !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96)) !important;
+  box-shadow:
+    0 18px 38px rgba(15,23,42,.08),
+    0 4px 10px rgba(15,23,42,.05) !important;
+  overflow:hidden;
+}
+
+.card .cardHead,
+.card .cardHeader,
+.card header{
+  background:rgba(255,255,255,.72);
+  border-bottom:1px solid rgba(148,163,184,.16);
+  backdrop-filter:blur(3px);
+}
+
+/* ===== Table actions ===== */
+.tableActions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 16px 10px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  background:rgba(248,250,252,.74);
+}
+
+#flows tbody tr{
+  cursor:pointer;
+  transition:background .12s ease, box-shadow .12s ease;
+}
+
+#flows tbody tr:hover{
+  background:rgba(99,102,241,.05);
+}
+
+#flows tbody tr.isSelected{
+  background:rgba(99,102,241,.10);
+  box-shadow:inset 3px 0 0 rgba(79,70,229,.92);
+}
+
+#flows td, #flows th{
+  vertical-align:middle;
+}
+
+.countCell{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  white-space:nowrap;
+}
+
+.countVal{
+  display:inline-block;
+  min-width:20px;
+  text-align:right;
+}
+
+/* ===== Monitor list ===== */
+.monItem{
+  position:relative;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 14px;
+  border:1px solid rgba(148,163,184,.16);
+  border-radius:16px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 4px 12px rgba(15,23,42,.04);
+}
+
+.monItem::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:10px;
+  bottom:10px;
+  width:4px;
+  border-radius:999px;
+  background:rgba(148,163,184,.45);
+}
+
+.monItem[data-status="ERROR"]::before{ background:rgba(239,68,68,.92); }
+.monItem[data-status="WARNING"]::before{ background:rgba(245,158,11,.92); }
+.monItem[data-status="INFO"]::before{ background:rgba(34,197,94,.88); }
+
+.monBadge{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-width:auto;
+  height:24px;
+  padding:0 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,.18);
+  font-size:12px;
+  font-weight:700;
+  background:rgba(248,250,252,.92);
+  color:rgba(15,23,42,.88);
+}
+
+.monBadge::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(148,163,184,.70);
+}
+
+.monBadge.err{
+  background:rgba(254,242,242,.95);
+  color:rgba(153,27,27,.96);
+}
+.monBadge.err::before{ background:rgba(239,68,68,.92); }
+
+.monBadge.war{
+  background:rgba(255,251,235,.95);
+  color:rgba(146,64,14,.96);
+}
+.monBadge.war::before{ background:rgba(245,158,11,.92); }
+
+.monBadge.inf{
+  background:rgba(240,253,244,.95);
+  color:rgba(22,101,52,.96);
+}
+.monBadge.inf::before{ background:rgba(34,197,94,.88); }
+
+.monActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-left:auto;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  width:auto;
+  min-width:0;
+  height:28px;
+  padding:0 10px;
+  border-radius:10px;
+}
+
+.monLink.iconBtn .svgIcon,
+.monEditBtn.iconBtn .svgIcon{
+  display:none;
+}
+
+.monLink.iconBtn::after{
+  content:"Visa";
+  font-size:12px;
+  font-weight:600;
+}
+
+.monEditBtn.iconBtn::after{
+  content:"Redigera";
+  font-size:12px;
+  font-weight:600;
+}
+
+
+
+/* ===== Simplify monitor list ===== */
+.monItem::before{
+  display:none !important;
+}
+
+.monBadge{
+  min-width:92px;
+  justify-content:center;
+}
+
+.monLink.iconBtn,
+.monEditBtn.iconBtn{
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:0;
+  border-radius:10px;
+}
+
+.monLink.iconBtn::after,
+.monEditBtn.iconBtn::after{
+  content:none !important;
+}
+
+.monLink.iconBtn .svgIcon,
+.monEditBtn.iconBtn .svgIcon{
+  display:block !important;
+  width:15px;
+  height:15px;
+}
+
+.monActions{
+  gap:8px;
+}
+
+.monItem{
+  padding:12px 14px;
+}
+
+/* ===== Remove toolbar styling from flow table if present ===== */
+.tableActions,
+#flowTableActions{
+  display:none !important;
+}
+
+
+
+/* ===== Unify page styling ===== */
+.card{
+  border:1px solid rgba(148,163,184,.16) !important;
+  border-radius:18px !important;
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96)) !important;
+  box-shadow:0 14px 30px rgba(15,23,42,.07), 0 3px 8px rgba(15,23,42,.04) !important;
+}
+
+#flows tbody tr{
+  transition:background .12s ease;
+}
+
+#flows tbody tr:hover{
+  background:rgba(15,23,42,.035);
+}
+
+#flows tbody tr.isSelected{
+  background:rgba(99,102,241,.08);
+  box-shadow:inset 3px 0 0 rgba(79,70,229,.92);
+}
+
+.iconBtn,
+.btn{
+  transition:background .12s ease, border-color .12s ease, color .12s ease;
+}
+
+.iconBtn,
+.btn,
+.monLink.iconBtn,
+.monEditBtn.iconBtn,
+.detailIconBtn{
+  border-radius:10px !important;
+}
+
+/* Hide the old per-row detail icon look completely */
+.detailIconBtn{
+  display:none !important;
+}

@@ -1,0 +1,134 @@
+{
+  "range": {
+    "2026-03-09..2026-03-09": {
+      "rows": [
+        {
+          "sender": "RSF",
+          "receiver": "SAP-ECC",
+          "msgType": "RSFBESTANMIN",
+          "state": "Finished",
+          "count": 42
+        },
+        {
+          "sender": "SAP-ECC",
+          "receiver": "RSF",
+          "msgType": "RSFBESTANM",
+          "state": "Finished",
+          "count": 62
+        }
+      ]
+    },
+    "2026-03-03..2026-03-09": {
+      "rows": [
+        {
+          "sender": "RSF",
+          "receiver": "SAP-ECC",
+          "msgType": "RSFBESTANMIN",
+          "state": "Finished",
+          "count": 180
+        },
+        {
+          "sender": "SAP-ECC",
+          "receiver": "RSF",
+          "msgType": "RSFBESTANM",
+          "state": "Finished",
+          "count": 210
+        }
+      ]
+    }
+  },
+  "running": {
+    "rows": [
+      {
+        "sender": "RSF",
+        "receiver": "SAP-ECC",
+        "msgType": "RSFBESTANMIN",
+        "state": "Running",
+        "count": 5
+      }
+    ]
+  },
+  "stopped": {
+    "rows": [
+      {
+        "sender": "SAP-ECC",
+        "receiver": "RSF",
+        "msgType": "RSFBESTANM",
+        "state": "Stopped",
+        "count": 2
+      }
+    ]
+  },
+  "finished": {
+    "rows": [
+      {
+        "sender": "RSF",
+        "receiver": "SAP-ECC",
+        "msgType": "RSFBESTANMIN",
+        "state": "Finished",
+        "count": 42
+      },
+      {
+        "sender": "SAP-ECC",
+        "receiver": "RSF",
+        "msgType": "RSFBESTANM",
+        "state": "Finished",
+        "count": 62
+      }
+    ]
+  },
+  "monitoring": {
+    "counters": {
+      "error": 1,
+      "warning": 1,
+      "info": 0
+    },
+    "rows": [
+      {
+        "flowId": "RSF||SAP-ECC||RSFBESTANMIN",
+        "sender": "RSF",
+        "receiver": "SAP-ECC",
+        "msgType": "RSFBESTANMIN",
+        "name": "RSF BESTANM IN",
+        "enabled": true,
+        "mode": "intervals",
+        "status": "WARNING",
+        "today": 42,
+        "message": "Intervall 09:00-10:15: ligger efter",
+        "details": "42 idag",
+        "warningLeadMinutes": 20,
+        "intervals": [
+          {
+            "start": "09:00",
+            "end": "10:15",
+            "expected": 50,
+            "warnAtPct": 0.7,
+            "tolerancePct": 0.05
+          }
+        ],
+        "times": []
+      },
+      {
+        "flowId": "SAP-ECC||RSF||RSFBESTANM",
+        "sender": "SAP-ECC",
+        "receiver": "RSF",
+        "msgType": "RSFBESTANM",
+        "name": "RSF BESTANM UT",
+        "enabled": true,
+        "mode": "exactTimes",
+        "status": "ERROR",
+        "today": 12,
+        "message": "Tid 08:00: saknar 18",
+        "details": "12 idag, Senast 07:41:00",
+        "warningLeadMinutes": 10,
+        "intervals": [],
+        "times": [
+          {
+            "time": "08:00",
+            "expected": 30
+          }
+        ]
+      }
+    ]
+  }
+}

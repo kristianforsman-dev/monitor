@@ -1,0 +1,1120 @@
+(function(w){
+  'use strict';
+
+  var state = {
+    preset: '1d',
+    range: null,
+    rows: [],
+    monitoring: [],
+    selectedId: '',
+    search: '',
+    sender: '',
+    receiver: '',
+    status: '',
+    monitoringConfig: null,
+    editingFlowId: ''
+  };
+
+  function todayISO(){
+    try{
+      if(w.FM && w.FM.state && w.FM.state.mockToday){
+        return String(w.FM.state.mockToday);
+      }
+    }catch(e){}
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth()+1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function addDays(iso, delta){
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    var y = d.getFullYear();
+    var m = String(d.getMonth()+1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function presetToRange(preset){
+    var to = todayISO();
+    if(preset === '30d') return { from:addDays(to, -29), to:to };
+    if(preset === '7d') return { from:addDays(to, -6), to:to };
+    return { from:to, to:to };
+  }
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function byId(id){ return document.getElementById(id); }
+
+  function rowKey(r){
+    return [r.sender||'', r.receiver||'', r.msgType||'', r.state||''].join('|');
+  }
+
+  async function fetchJson(url, init){
+    var r = await fetch(url, init || { cache:'no-store' });
+    if(!r.ok) throw new Error(url + ' -> ' + r.status);
+    return await r.json();
+  }
+
+  function hideLegacyDetails(){
+    var ids = [
+      'detailPane','detailPanel','flowDetail','detailDrawerHost','detailHost',
+      'detail','details','detailView','flowDetails','detailContainer',
+      'monEditorBackdrop'
+    ];
+    for(var i=0;i<ids.length;i++){
+      var el = byId(ids[i]);
+      if(el){
+        el.style.display = 'none';
+        el.hidden = true;
+      }
+    }
+    var sels = ['.legacyDetail','.detailInline','.detailPane','.detailPanel','.flowDetailInline'];
+    for(var j=0;j<sels.length;j++){
+      var nodes = document.querySelectorAll(sels[j]);
+      for(var k=0;k<nodes.length;k++){
+        nodes[k].style.display = 'none';
+        nodes[k].hidden = true;
+      }
+    }
+  }
+
+  async function refresh(){
+    if(!state.range || !state.range.from || !state.range.to){
+      state.range = presetToRange('1d');
+    }
+
+    var q = '?from=' + encodeURIComponent(state.range.from) + '&to=' + encodeURIComponent(state.range.to);
+
+    var results = await Promise.all([
+      fetchJson('api/range' + q, { cache:'no-store' }),
+      fetchJson('api/monitoring' + q, { cache:'no-store' })
+    ]);
+
+    state.rows = Array.isArray(results[0] && results[0].rows) ? results[0].rows : [];
+    state.monitoring = Array.isArray(results[1] && results[1].rows) ? results[1].rows : [];
+
+    if(state.selectedId){
+      var exists = false;
+      for(var i=0;i<state.rows.length;i++){
+        if(rowKey(state.rows[i]) === state.selectedId){ exists = true; break; }
+      }
+      if(!exists) state.selectedId = '';
+    }
+
+    render();
+  }
+
+  function filteredRows(){
+    var out = [];
+    var q = String(state.search || '').trim().toLowerCase();
+
+    for(var i=0;i<state.rows.length;i++){
+      var r = state.rows[i] || {};
+      if(state.sender && String(r.sender || '') !== state.sender) continue;
+      if(state.receiver && String(r.receiver || '') !== state.receiver) continue;
+      if(state.status && String(r.state || '') !== state.status) continue;
+
+      if(q){
+        var hay = (
+          String(r.sender || '') + ' ' +
+          String(r.receiver || '') + ' ' +
+          String(r.msgType || '') + ' ' +
+          String(r.state || '')
+        ).toLowerCase();
+        if(hay.indexOf(q) === -1) continue;
+      }
+
+      out.push(r);
+    }
+
+    out.sort(function(a,b){
+      var ak = (String(a.sender||'') + '|' + String(a.receiver||'') + '|' + String(a.msgType||'') + '|' + String(a.state||'')).toLowerCase();
+      var bk = (String(b.sender||'') + '|' + String(b.receiver||'') + '|' + String(b.msgType||'') + '|' + String(b.state||'')).toLowerCase();
+      if(ak < bk) return -1;
+      if(ak > bk) return 1;
+      return 0;
+    });
+
+    return out;
+  }
+
+  function uniqueValues(key){
+    var seen = Object.create(null);
+    var out = [];
+    for(var i=0;i<state.rows.length;i++){
+      var v = String((state.rows[i] || {})[key] || '');
+      if(!v || seen[v]) continue;
+      seen[v] = true;
+      out.push(v);
+    }
+    out.sort();
+    return out;
+  }
+
+  function monitorBadgeCls(status){
+    status = String(status || '').toUpperCase();
+    if(status === 'ERROR') return 'error';
+    if(status === 'WARNING') return 'warning';
+    return 'info';
+  }
+
+  function ensureRoot(){
+    if(byId('fmCleanApp')) return;
+
+    var root = document.createElement('div');
+    root.id = 'fmCleanApp';
+    root.innerHTML = ''
+      + '<div class="fmWrap">'
+      + '  <div class="fmTopbar">'
+      + '    <div>'
+      + '      <div class="fmTitle">Flow Monitor</div>'
+      + '      <div class="fmSub">Ren vy för flöden, detaljer och bevakningar.</div>'
+      + '    </div>'
+      + '  </div>'
+
+      + '  <div class="fmGrid">'
+      + '    <section class="fmCard">'
+      + '      <div class="fmCardHead">'
+      + '        <div>'
+      + '          <div class="fmCardTitle">Flöden</div>'
+      + '          <div id="fmRangeMeta" class="fmCardMeta"></div>'
+      + '        </div>'
+      + '        <div class="fmDoubleHint">Dubbelklick = detaljer</div>'
+      + '      </div>'
+      + '      <div class="fmFilters">'
+      + '        <div class="fmFilterPrimary">'
+      + '          <input id="fmSearch" class="fmInput" type="text" placeholder="Sök avsändare, mottagare, meddelandetyp eller status" />'
+      + '          <select id="fmSender" class="fmSelect"><option value="">Alla avsändare</option></select>'
+      + '          <select id="fmReceiver" class="fmSelect"><option value="">Alla mottagare</option></select>'
+      + '          <select id="fmStatus" class="fmSelect"><option value="">Alla statusar</option></select>'
+      + '        </div>'
+      + '        <div class="fmFilterSecondary">'
+      + '          <input id="fmDateFrom" class="fmInput" type="date" />'
+      + '          <input id="fmDateTo" class="fmInput" type="date" />'
+      + '          <div class="fmPresetBar">'
+      + '            <button type="button" class="fmBtn fmPreset" data-preset="1d">1 dag</button>'
+      + '            <button type="button" class="fmBtn fmPreset" data-preset="7d">7 dagar</button>'
+      + '            <button type="button" class="fmBtn fmPreset" data-preset="30d">30 dagar</button>'
+      + '          </div>'
+      + '          <button type="button" id="fmClearFilters" class="fmBtn fmBtnGhost">Rensa</button>'
+      + '        </div>'
+      + '      </div>'
+      + '      <table class="fmTable">'
+      + '        <thead>'
+      + '          <tr>'
+      + '            <th>Avsändare</th>'
+      + '            <th>Mottagare</th>'
+      + '            <th>Meddelandetyp</th>'
+      + '            <th>Status</th>'
+      + '            <th class="fmNum">Antal</th>'
+      + '          </tr>'
+      + '        </thead>'
+      + '        <tbody id="fmTableBody"></tbody>'
+      + '      </table>'
+      + '      <div id="fmTableHint" class="fmHint"></div>'
+      + '    </section>'
+
+      + '    <section class="fmCard">'
+      + '      <div class="fmCardHead">'
+      + '        <div>'
+      + '          <div class="fmCardTitle">Bevakningar</div>'
+      + '          <div class="fmCardMeta">Dubbelklick = öppna regel</div>'
+      + '        </div>'
+      + '        <button type="button" id="fmNewMonitor" class="fmBtn fmBtnGhost">Ny</button>'
+      + '      </div>'
+      + '      <div id="fmMonitorList" class="fmMonitorList"></div>'
+      + '    </section>'
+      + '  </div>'
+      + '</div>'
+
+      + '<div id="fmDetailBackdrop" class="fmDrawerBackdrop" hidden>'
+      + '  <aside class="fmDrawer">'
+      + '    <div class="fmDrawerHead">'
+      + '      <div class="fmDrawerTitle">Flödesdetaljer</div>'
+      + '      <button type="button" id="fmDetailCloseX" class="fmBtn fmBtnGhost">Stäng</button>'
+      + '    </div>'
+      + '    <div id="fmDetailBody" class="fmDrawerBody"></div>'
+      + '    <div class="fmDrawerFoot">'
+      + '      <button type="button" id="fmDetailCloseBtn" class="fmBtn">Stäng</button>'
+      + '    </div>'
+      + '  </aside>'
+      + '</div>'
+
+      + '<div id="fmMonitorBackdrop" class="fmDrawerBackdrop" hidden>'
+      + '  <aside class="fmDrawer fmEditorDrawer">'
+      + '    <div class="fmDrawerHead">'
+      + '      <div id="fmMonitorTitle" class="fmDrawerTitle">Redigera bevakning</div>'
+      + '      <button type="button" id="fmMonitorCloseX" class="fmBtn fmBtnGhost">Stäng</button>'
+      + '    </div>'
+      + '    <div class="fmDrawerBody">'
+      + '      <div class="fmEditorGrid">'
+      + '        <label class="fmField"><span>Avsändare</span><input id="fmMonSender" class="fmInput" type="text"></label>'
+      + '        <label class="fmField"><span>Mottagare</span><input id="fmMonReceiver" class="fmInput" type="text"></label>'
+      + '        <label class="fmField"><span>Meddelandetyp</span><input id="fmMonMsgType" class="fmInput" type="text"></label>'
+      + '        <label class="fmField"><span>Namn</span><input id="fmMonName" class="fmInput" type="text"></label>'
+      + '        <label class="fmField"><span>Typ</span>'
+      + '          <select id="fmMonMode" class="fmSelect">'
+      + '            <option value="interval">Intervall</option>'
+      + '            <option value="exactTimes">Exakta tider</option>'
+      + '            <option value="weekdays">Veckodagar</option>'
+      + '            <option value="monthDays">Månadsdagar</option>'
+      + '            <option value="dates">Datum</option>'
+      + '          </select>'
+      + '        </label>'
+      + '        <label class="fmField fmFieldSwitch"><span>Aktiv bevakning</span><input id="fmMonEnabled" type="checkbox"></label>'
+      + '        <label class="fmField"><span>Varning före (min)</span><input id="fmMonWarnLead" class="fmInput" type="number" step="1"></label>'
+      + '        <label class="fmField"><span>Felmarginal efter (min)</span><input id="fmMonErrorGrace" class="fmInput" type="number" step="1"></label>'
+      + '        <label id="fmMonExpectedWrap" class="fmField"><span>Förväntat antal</span><input id="fmMonExpected" class="fmInput" type="number" step="1"></label>'
+      + '        <label id="fmMonDueTimeWrap" class="fmField"><span>Förfallotid</span><input id="fmMonDueTime" class="fmInput" type="time"></label>'
+      + '        <label id="fmMonCarryWrap" class="fmField"><span>Hantering efter förfall</span>'
+      + '          <select id="fmMonCarry" class="fmSelect">'
+      + '            <option value="sameDay">sameDay</option>'
+      + '            <option value="nextBusinessDayMorning">nextBusinessDayMorning</option>'
+      + '          </select>'
+      + '        </label>'
+
+      + '        <div id="fmMonIntervalsWrap" class="fmField fmFieldWide">'
+      + '          <span>Intervallregler</span>'
+      + '          <div class="fmRuleHdr fmRuleHdrInterval"><span>Start</span><span>Slut</span><span>Förväntat</span><span>Varn %</span><span>Tol %</span><span></span></div>'
+      + '          <div id="fmMonIntervalsGrid" class="fmRulesGrid"></div>'
+      + '          <button type="button" id="fmAddInterval" class="fmBtn fmBtnGhost">Lägg till intervall</button>'
+      + '        </div>'
+
+      + '        <div id="fmMonTimesWrap" class="fmField fmFieldWide">'
+      + '          <span>Exakta tider</span>'
+      + '          <div class="fmRuleHdr fmRuleHdrTime"><span>Tid</span><span>Förväntat</span><span></span></div>'
+      + '          <div id="fmMonTimesGrid" class="fmRulesGrid"></div>'
+      + '          <button type="button" id="fmAddTime" class="fmBtn fmBtnGhost">Lägg till tid</button>'
+      + '        </div>'
+
+      + '        <div id="fmMonWeekdaysWrap" class="fmField fmFieldWide">'
+      + '          <span>Veckodagar</span>'
+      + '          <div id="fmMonWeekdaysChecks" class="fmChecks"></div>'
+      + '        </div>'
+
+      + '        <div id="fmMonMonthDaysWrap" class="fmField fmFieldWide">'
+      + '          <span>Månadsdagar</span>'
+      + '          <div id="fmMonMonthDaysGrid" class="fmChipGrid"></div>'
+      + '        </div>'
+
+      + '        <div id="fmMonDatesWrap" class="fmField fmFieldWide">'
+      + '          <span>Datum</span>'
+      + '          <div id="fmMonDatesRows" class="fmDateRows"></div>'
+      + '          <button type="button" id="fmAddDate" class="fmBtn fmBtnGhost">Lägg till datum</button>'
+      + '        </div>'
+
+      + '        <div id="fmMonError" class="fmMessage fmMessageError" hidden></div>'
+      + '        <div id="fmMonSuccess" class="fmMessage fmMessageSuccess" hidden>Sparat</div>'
+      + '      </div>'
+      + '    </div>'
+      + '    <div class="fmDrawerFoot">'
+      + '      <button type="button" id="fmMonitorCancel" class="fmBtn">Avbryt</button>'
+      + '      <button type="button" id="fmMonitorSave" class="fmBtn fmBtnPrimary">Spara</button>'
+      + '    </div>'
+      + '  </aside>'
+      + '</div>';
+
+    document.body.appendChild(root);
+    document.body.classList.add('fm-clean-active');
+    hideLegacyDetails();
+    bindEvents();
+  }
+
+  function render(){
+    ensureRoot();
+    hideLegacyDetails();
+
+    var meta = byId('fmRangeMeta');
+    if(meta){
+      meta.textContent = state.range ? (state.range.from + ' → ' + state.range.to) : '';
+    }
+
+    var fromEl = byId('fmDateFrom');
+    var toEl = byId('fmDateTo');
+    if(fromEl && state.range) fromEl.value = state.range.from || '';
+    if(toEl && state.range) toEl.value = state.range.to || '';
+
+    var presetBtns = document.querySelectorAll('#fmCleanApp .fmPreset');
+    for(var i=0;i<presetBtns.length;i++){
+      presetBtns[i].classList.remove('isActive');
+    }
+
+    renderFilterOptions();
+    renderTable();
+    renderMonitoring();
+
+    var stray = document.querySelectorAll('#fmCleanApp .fmBtn.isActive, #fmCleanApp .fmBtnGhost.isActive, #fmCleanApp .fmBtnPrimary.isActive');
+    for(var i=0;i<stray.length;i++){
+      stray[i].classList.remove('isActive');
+    }
+  }
+
+  function renderFilterOptions(){
+    renderSelect('fmSender', uniqueValues('sender'), 'Alla avsändare', state.sender);
+    renderSelect('fmReceiver', uniqueValues('receiver'), 'Alla mottagare', state.receiver);
+    renderSelect('fmStatus', uniqueValues('state'), 'Alla statusar', state.status);
+
+    var search = byId('fmSearch');
+    if(search && search.value !== state.search) search.value = state.search;
+  }
+
+  function renderSelect(id, values, placeholder, selected){
+    var el = byId(id);
+    if(!el) return;
+    var html = '<option value="">' + esc(placeholder) + '</option>';
+    for(var i=0;i<values.length;i++){
+      var v = values[i];
+      html += '<option value="' + esc(v) + '"' + (v === selected ? ' selected' : '') + '>' + esc(v) + '</option>';
+    }
+    el.innerHTML = html;
+  }
+
+  function renderTable(){
+    var body = byId('fmTableBody');
+    var hint = byId('fmTableHint');
+    if(!body || !hint) return;
+
+    var rows = filteredRows();
+    if(!rows.length){
+      body.innerHTML = '<tr><td colspan="5" class="fmEmpty">Inga rader matchar filtren.</td></tr>';
+      hint.textContent = '0 rader';
+      return;
+    }
+
+    var html = '';
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      var id = rowKey(r);
+      html += ''
+        + '<tr class="' + (state.selectedId === id ? 'isSelected' : '') + '" data-rowid="' + esc(id) + '">'
+        + '  <td class="fmMono">' + esc(r.sender) + '</td>'
+        + '  <td class="fmMono">' + esc(r.receiver) + '</td>'
+        + '  <td>' + esc(r.msgType) + '</td>'
+        + '  <td>' + esc(r.state) + '</td>'
+        + '  <td class="fmNum fmMono">' + esc(r.count) + '</td>'
+        + '</tr>';
+    }
+    body.innerHTML = html;
+    hint.textContent = rows.length + ' rader';
+
+    var trs = body.querySelectorAll('tr[data-rowid]');
+    for(var j=0;j<trs.length;j++){
+      (function(tr){
+        tr.addEventListener('click', function(){
+          state.selectedId = tr.getAttribute('data-rowid') || '';
+          var all = body.querySelectorAll('tr[data-rowid]');
+          for(var k=0;k<all.length;k++) all[k].classList.remove('isSelected');
+          tr.classList.add('isSelected');
+        });
+
+        tr.addEventListener('dblclick', function(){
+          var id = tr.getAttribute('data-rowid') || '';
+          state.selectedId = id;
+          var all = body.querySelectorAll('tr[data-rowid]');
+          for(var k=0;k<all.length;k++) all[k].classList.remove('isSelected');
+          tr.classList.add('isSelected');
+          openDetail(findRowById(id));
+        });
+      })(trs[j]);
+    }
+  }
+
+  function renderMonitoring(){
+    var host = byId('fmMonitorList');
+    if(!host) return;
+
+    if(!state.monitoring.length){
+      host.innerHTML = '<div class="fmEmpty">Inga bevakningar att visa.</div>';
+      return;
+    }
+
+    var html = '';
+    for(var i=0;i<state.monitoring.length;i++){
+      var r = state.monitoring[i] || {};
+      var status = String(r.status || 'INFO').toUpperCase();
+      var badgeCls = monitorBadgeCls(status);
+      var meta = [];
+      if(r.mode) meta.push(r.mode);
+      if(r.message) meta.push(r.message);
+      if(r.details) meta.push(r.details);
+
+      html += ''
+        + '<div class="fmMonitorItem" data-flowid="' + esc(r.flowId || '') + '">'
+        + '  <div class="fmMonitorMain">'
+        + '    <div class="fmMonitorName">' + esc(r.name || r.flowId || '') + '</div>'
+        + '    <div class="fmMonitorMeta">' + esc(meta.join(' • ')) + '</div>'
+        + '  </div>'
+        + '  <div class="fmMonitorActions">'
+        + '    <span class="fmBadge ' + badgeCls + '">' + esc(status) + '</span>'
+        + '  </div>'
+        + '</div>';
+    }
+
+    host.innerHTML = html;
+  }
+
+  function openDetail(row){
+    if(!row) return;
+    hideLegacyDetails();
+
+    var body = byId('fmDetailBody');
+    var backdrop = byId('fmDetailBackdrop');
+    if(!body || !backdrop) return;
+
+    body.innerHTML = ''
+      + '<div class="fmDetailGrid">'
+      + '  <div class="fmDetailItem"><span class="fmDetailLabel">Avsändare</span><span class="fmDetailValue fmMono">' + esc(row.sender) + '</span></div>'
+      + '  <div class="fmDetailItem"><span class="fmDetailLabel">Mottagare</span><span class="fmDetailValue fmMono">' + esc(row.receiver) + '</span></div>'
+      + '  <div class="fmDetailItem"><span class="fmDetailLabel">Meddelandetyp</span><span class="fmDetailValue">' + esc(row.msgType) + '</span></div>'
+      + '  <div class="fmDetailItem"><span class="fmDetailLabel">Status</span><span class="fmDetailValue">' + esc(row.state) + '</span></div>'
+      + '  <div class="fmDetailItem"><span class="fmDetailLabel">Antal</span><span class="fmDetailValue fmMono">' + esc(row.count) + '</span></div>'
+      + '</div>';
+
+    backdrop.hidden = false;
+  }
+
+  function closeDetail(){
+    var backdrop = byId('fmDetailBackdrop');
+    if(backdrop) backdrop.hidden = true;
+  }
+
+  function findRowById(id){
+    for(var i=0;i<state.rows.length;i++){
+      if(rowKey(state.rows[i]) === id) return state.rows[i];
+    }
+    return null;
+  }
+
+  async function loadMonitoringConfig(){
+    return await fetchJson('api/monitoring-config', { cache:'no-store' });
+  }
+
+  async function saveMonitoringConfig(cfg){
+    return await fetchJson('api/monitoring-config', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json; charset=UTF-8' },
+      body: JSON.stringify(cfg, null, 2)
+    });
+  }
+
+  function normalizeEditorRule(flow){
+    var x = {
+      mode: 'interval',
+      intervals: [],
+      times: [],
+      weekdays: [],
+      monthDays: [],
+      dates: [],
+      expected: '',
+      dueTime: '',
+      carryOverMode: 'sameDay'
+    };
+
+    var sched = (flow && flow.schedule && typeof flow.schedule === 'object') ? flow.schedule : null;
+    if(sched){
+      var t = String(sched.type || '').trim();
+      if(t === 'interval'){
+        x.mode = 'interval';
+        x.intervals = Array.isArray(sched.intervals) ? sched.intervals : [];
+      }else if(t === 'exactTimes' || t === 'exacttimes'){
+        x.mode = 'exactTimes';
+        x.times = Array.isArray(sched.times) ? sched.times : [];
+      }else if(t === 'weekdays'){
+        x.mode = 'weekdays';
+        x.weekdays = Array.isArray(sched.weekdays) ? sched.weekdays : [];
+        x.expected = sched.expected == null ? '' : String(sched.expected);
+        x.dueTime = String(sched.dueTime || '');
+        x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+      }else if(t === 'monthDays' || t === 'monthdays'){
+        x.mode = 'monthDays';
+        x.monthDays = Array.isArray(sched.monthDays) ? sched.monthDays : [];
+        x.expected = sched.expected == null ? '' : String(sched.expected);
+        x.dueTime = String(sched.dueTime || '');
+        x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+      }else if(t === 'dates'){
+        x.mode = 'dates';
+        x.dates = Array.isArray(sched.dates) ? sched.dates : [];
+        x.expected = sched.expected == null ? '' : String(sched.expected);
+        x.dueTime = String(sched.dueTime || '');
+        x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+      }
+      return x;
+    }
+
+    return x;
+  }
+
+  function renderIntervalRows(items){
+    items = Array.isArray(items) ? items : [];
+    var host = byId('fmMonIntervalsGrid');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="interval">'
+        + '  <input class="fmInput fmIntStart" type="time" value="' + esc(it.start || '') + '">'
+        + '  <input class="fmInput fmIntEnd" type="time" value="' + esc(it.end || '') + '">'
+        + '  <input class="fmInput fmIntExpected" type="number" step="1" value="' + esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <input class="fmInput fmIntWarnPct" type="number" step="0.01" value="' + esc(it.warnAtPct == null ? '' : it.warnAtPct) + '">'
+        + '  <input class="fmInput fmIntTolPct" type="number" step="0.01" value="' + esc(it.tolerancePct == null ? '' : it.tolerancePct) + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function renderTimeRows(items){
+    items = Array.isArray(items) ? items : [];
+    var host = byId('fmMonTimesGrid');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="time">'
+        + '  <input class="fmInput fmTimeAt" type="time" value="' + esc(it.time || '') + '">'
+        + '  <input class="fmInput fmTimeExpected" type="number" step="1" value="' + esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function renderWeekdayChecks(values){
+    values = Array.isArray(values) ? values : [];
+    var host = byId('fmMonWeekdaysChecks');
+    if(!host) return;
+    var labels = [
+      { v:1, t:'Mån' },
+      { v:2, t:'Tis' },
+      { v:3, t:'Ons' },
+      { v:4, t:'Tor' },
+      { v:5, t:'Fre' },
+      { v:6, t:'Lör' },
+      { v:7, t:'Sön' }
+    ];
+    var html = '';
+    for(var i=0;i<labels.length;i++){
+      var it = labels[i];
+      var checked = values.indexOf(it.v) !== -1 ? ' checked' : '';
+      html += '<label class="fmCheck"><input type="checkbox" class="fmWeekdayChk" value="' + it.v + '"' + checked + '> ' + it.t + '</label>';
+    }
+    host.innerHTML = html;
+  }
+
+  function collectWeekdays(){
+    var nodes = document.querySelectorAll('#fmMonWeekdaysChecks .fmWeekdayChk:checked');
+    var out = [];
+    for(var i=0;i<nodes.length;i++) out.push(Number(nodes[i].value));
+    return out;
+  }
+
+  function renderMonthDayChips(values){
+    values = Array.isArray(values) ? values.slice() : [];
+    values.sort(function(a,b){ return a-b; });
+
+    var host = byId('fmMonMonthDaysGrid');
+    var summary = byId('fmMonMonthDaysSummary');
+    if(!host) return;
+
+    var html = '';
+    for(var d=1; d<=31; d++){
+      var selected = values.indexOf(d) !== -1;
+      var active = selected ? ' isActive' : '';
+      html += ''
+        + '<button'
+        + ' type="button"'
+        + ' class="fmBtn fmChip' + active + '"'
+        + ' data-day="' + d + '"'
+        + ' aria-pressed="' + (selected ? 'true' : 'false') + '"'
+        + ' title="Dag ' + d + '">'
+        + ' <span class="fmChipLabel">' + d + '</span>'
+        + '</button>';
+    }
+    host.innerHTML = html;
+
+    if(summary){
+      summary.textContent = values.length
+        ? ('Valda dagar: ' + values.join(', '))
+        : 'Inga månadsdagar valda';
+    }
+  }
+
+  function collectMonthDays(){
+    var nodes = document.querySelectorAll('#fmMonMonthDaysGrid .fmChip.isActive');
+    var out = [];
+    for(var i=0;i<nodes.length;i++) out.push(Number(nodes[i].getAttribute('data-day') || 0));
+    return out;
+  }
+
+  function renderDateRows(values){
+    values = Array.isArray(values) ? values : [];
+    var host = byId('fmMonDatesRows');
+    if(!host) return;
+    if(!values.length) values = [''];
+    var html = '';
+    for(var i=0;i<values.length;i++){
+      var v = values[i] || '';
+      html += ''
+        + '<div class="fmDateRow">'
+        + '  <input type="date" class="fmInput fmDateVal" value="' + esc(v) + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmDateRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function collectDates(){
+    var nodes = document.querySelectorAll('#fmMonDatesRows .fmDateVal');
+    var out = [];
+    for(var i=0;i<nodes.length;i++){
+      var v = String(nodes[i].value || '').trim();
+      if(v) out.push(v);
+    }
+    return out;
+  }
+
+  function collectIntervalRows(){
+    var host = byId('fmMonIntervalsGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="interval"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        start: (r.querySelector('.fmIntStart') || {}).value || '',
+        end: (r.querySelector('.fmIntEnd') || {}).value || '',
+        expected: Number(((r.querySelector('.fmIntExpected') || {}).value) || 0),
+        warnAtPct: Number(((r.querySelector('.fmIntWarnPct') || {}).value) || 0),
+        tolerancePct: Number(((r.querySelector('.fmIntTolPct') || {}).value) || 0)
+      });
+    }
+    return out.filter(function(x){ return x.start && x.end && x.expected > 0; });
+  }
+
+  function collectTimeRows(){
+    var host = byId('fmMonTimesGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="time"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        time: (r.querySelector('.fmTimeAt') || {}).value || '',
+        expected: Number(((r.querySelector('.fmTimeExpected') || {}).value) || 0)
+      });
+    }
+    return out.filter(function(x){ return x.time && x.expected > 0; });
+  }
+
+  function toggle(id, yes){
+    var el = byId(id);
+    if(el) el.style.display = yes ? '' : 'none';
+  }
+
+  function syncMonitorModeUi(){
+    var mode = String((byId('fmMonMode') || {}).value || 'interval');
+    toggle('fmMonIntervalsWrap', mode === 'interval');
+    toggle('fmMonTimesWrap', mode === 'exactTimes');
+    toggle('fmMonExpectedWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    toggle('fmMonDueTimeWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    toggle('fmMonCarryWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    toggle('fmMonWeekdaysWrap', mode === 'weekdays');
+    toggle('fmMonMonthDaysWrap', mode === 'monthDays');
+    toggle('fmMonDatesWrap', mode === 'dates');
+  }
+
+  function closeMonitorEditor(){
+    var b = byId('fmMonitorBackdrop');
+    if(b) b.hidden = true;
+    state.editingFlowId = '';
+    state.monitoringConfig = null;
+  }
+
+  async function openMonitorEditor(flowId){
+    try{
+      hideLegacyDetails();
+
+      var cfg = await loadMonitoringConfig();
+      cfg = cfg || {};
+      cfg.defaults = cfg.defaults || {};
+      cfg.flows = Array.isArray(cfg.flows) ? cfg.flows : [];
+
+      var isNew = (flowId === '__NEW__');
+      var flow = null;
+
+      if(!isNew){
+        for(var i=0;i<cfg.flows.length;i++){
+          if(String(cfg.flows[i].flowId || '') === String(flowId)){
+            flow = cfg.flows[i];
+            break;
+          }
+        }
+        if(!flow) throw new Error('Kunde inte hitta bevakning för ' + flowId);
+      }else{
+        flow = {
+          flowId:'',
+          name:'',
+          enabled:true,
+          schedule:{
+            type:'interval',
+            intervals:[{ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 }]
+          }
+        };
+      }
+
+      var n = normalizeEditorRule(flow);
+      var parts = String(flow.flowId || '').split('||');
+
+      state.monitoringConfig = cfg;
+      state.editingFlowId = flowId;
+
+      byId('fmMonitorTitle').textContent = isNew ? 'Ny bevakning' : 'Redigera bevakning';
+      byId('fmMonSender').value = parts[0] || '';
+      byId('fmMonReceiver').value = parts[1] || '';
+      byId('fmMonMsgType').value = parts.slice(2).join('||') || '';
+      byId('fmMonName').value = flow.name || '';
+      byId('fmMonEnabled').checked = flow.enabled !== false;
+      byId('fmMonMode').value = n.mode;
+      byId('fmMonWarnLead').value = flow.warningLeadMinutes == null ? '' : String(flow.warningLeadMinutes);
+      byId('fmMonErrorGrace').value = flow.errorGraceMinutes == null ? '' : String(flow.errorGraceMinutes);
+      byId('fmMonExpected').value = n.expected;
+      byId('fmMonDueTime').value = n.dueTime || '';
+      byId('fmMonCarry').value = n.carryOverMode || 'sameDay';
+
+      renderIntervalRows((n.intervals && n.intervals.length) ? n.intervals : [{ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 }]);
+      renderTimeRows((n.times && n.times.length) ? n.times : [{ time:'', expected:0 }]);
+      renderWeekdayChecks(n.weekdays || []);
+      renderMonthDayChips(n.monthDays || []);
+      renderDateRows(n.dates || []);
+
+      var err = byId('fmMonError');
+      var ok = byId('fmMonSuccess');
+      if(err){ err.hidden = true; err.textContent = ''; }
+      if(ok){ ok.hidden = true; ok.textContent = 'Sparat'; }
+
+      syncMonitorModeUi();
+      byId('fmMonitorBackdrop').hidden = false;
+      byId('fmMonSender').focus();
+    }catch(e){
+      alert('Kunde inte öppna editor: ' + (e && e.message ? e.message : e));
+    }
+  }
+
+  async function saveMonitorEditor(){
+    var cfg = state.monitoringConfig;
+    var flowId = state.editingFlowId;
+    var isNew = (flowId === '__NEW__');
+    if(!cfg) throw new Error('Ingen aktiv config');
+
+    cfg.flows = Array.isArray(cfg.flows) ? cfg.flows : [];
+
+    var flow = null;
+    if(isNew){
+      flow = {};
+      cfg.flows.push(flow);
+    }else{
+      for(var i=0;i<cfg.flows.length;i++){
+        if(String(cfg.flows[i].flowId || '') === String(flowId)){
+          flow = cfg.flows[i];
+          break;
+        }
+      }
+      if(!flow) throw new Error('Kunde inte hitta flow i config');
+    }
+
+    var sender = (byId('fmMonSender').value || '').trim();
+    var receiver = (byId('fmMonReceiver').value || '').trim();
+    var msgType = (byId('fmMonMsgType').value || '').trim();
+    if(!sender || !receiver || !msgType){
+      throw new Error('Avsändare, Mottagare och Meddelandetyp måste anges');
+    }
+
+    flow.flowId = sender + '||' + receiver + '||' + msgType;
+    flow.name = (byId('fmMonName').value || '').trim();
+    flow.enabled = !!byId('fmMonEnabled').checked;
+
+    var warnLeadRaw = byId('fmMonWarnLead').value;
+    var errGraceRaw = byId('fmMonErrorGrace').value;
+    flow.warningLeadMinutes = warnLeadRaw === '' ? null : Number(warnLeadRaw);
+    flow.errorGraceMinutes = errGraceRaw === '' ? null : Number(errGraceRaw);
+
+    var mode = String(byId('fmMonMode').value || 'interval');
+    var schedule = { type: mode };
+
+    if(mode === 'interval'){
+      schedule.intervals = collectIntervalRows();
+    }else if(mode === 'exactTimes'){
+      schedule.times = collectTimeRows();
+    }else if(mode === 'weekdays'){
+      schedule.expected = Number(byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(byId('fmMonCarry').value || 'sameDay');
+      schedule.weekdays = collectWeekdays();
+    }else if(mode === 'monthDays'){
+      schedule.expected = Number(byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(byId('fmMonCarry').value || 'sameDay');
+      schedule.monthDays = collectMonthDays();
+    }else if(mode === 'dates'){
+      schedule.expected = Number(byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(byId('fmMonCarry').value || 'sameDay');
+      schedule.dates = collectDates();
+    }
+
+    flow.schedule = schedule;
+
+    var saveBtn = byId('fmMonitorSave');
+    var err = byId('fmMonError');
+    var ok = byId('fmMonSuccess');
+    if(err){ err.hidden = true; err.textContent = ''; }
+    if(ok){ ok.hidden = true; ok.textContent = 'Sparat'; }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Sparar...';
+    try{
+      await saveMonitoringConfig(cfg);
+      state.monitoringConfig = null;
+      state.editingFlowId = '';
+      if(ok) ok.hidden = false;
+      await refresh();
+      closeMonitorEditor();
+    }finally{
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Spara';
+    }
+  }
+
+  function bindEvents(){
+    var root = byId('fmCleanApp');
+    if(!root || root.__wired) return;
+    root.__wired = true;
+
+    root.addEventListener('pointerup', function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('.fmBtn, .fmBtnGhost, .fmBtnPrimary, .fmPreset') : null;
+      if(btn){
+        try{ btn.blur(); }catch(ignore){}
+      }
+    });
+
+    root.addEventListener('click', function(e){
+      var preset = e.target.closest ? e.target.closest('.fmPreset') : null;
+      if(preset){
+        var quick = preset.getAttribute('data-preset') || '1d';
+        state.range = presetToRange(quick);
+
+        var fromEl = byId('fmDateFrom');
+        var toEl = byId('fmDateTo');
+        if(fromEl) fromEl.value = state.range.from || '';
+        if(toEl) toEl.value = state.range.to || '';
+
+        refresh().catch(showError);
+        return;
+      }
+
+      if(e.target.id === 'fmApplyDates'){
+        var fromEl = byId('fmDateFrom');
+        var toEl = byId('fmDateTo');
+        var from = fromEl ? String(fromEl.value || '').trim() : '';
+        var to = toEl ? String(toEl.value || '').trim() : '';
+        if(!from || !to){
+          alert('Välj både från- och tilldatum.');
+          return;
+        }
+        state.preset = 'custom';
+        state.range = { from: from, to: to };
+        refresh().catch(showError);
+        return;
+      }
+
+      if(e.target.id === 'fmClearFilters'){
+        state.search = '';
+        state.sender = '';
+        state.receiver = '';
+        state.status = '';
+        render();
+        return;
+      }
+
+      if(e.target.id === 'fmDetailCloseBtn' || e.target.id === 'fmDetailCloseX'){
+        closeDetail();
+        return;
+      }
+
+      if(e.target.id === 'fmNewMonitor'){
+        openMonitorEditor('__NEW__');
+        return;
+      }
+
+      var row = e.target.closest ? e.target.closest('#fmTableBody tr[data-rowid]') : null;
+      if(row){
+        state.selectedId = row.getAttribute('data-rowid') || '';
+        renderTable();
+        return;
+      }
+
+
+      if(e.target.id === 'fmDetailBackdrop'){
+        closeDetail();
+        return;
+      }
+
+      if(e.target.id === 'fmMonitorBackdrop'){
+        closeMonitorEditor();
+        return;
+      }
+
+      if(e.target.id === 'fmMonitorCloseX' || e.target.id === 'fmMonitorCancel'){
+        closeMonitorEditor();
+        return;
+      }
+
+      if(e.target.id === 'fmMonitorSave'){
+        saveMonitorEditor().catch(function(err2){
+          var box = byId('fmMonError');
+          if(box){
+            box.hidden = false;
+            box.textContent = 'Kunde inte spara: ' + (err2 && err2.message ? err2.message : err2);
+          }
+        });
+        return;
+      }
+
+      if(e.target.id === 'fmAddInterval'){
+        var items = collectIntervalRows();
+        items.push({ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 });
+        renderIntervalRows(items);
+        return;
+      }
+
+      if(e.target.id === 'fmAddTime'){
+        var titems = collectTimeRows();
+        titems.push({ time:'', expected:0 });
+        renderTimeRows(titems);
+        return;
+      }
+
+      if(e.target.id === 'fmMonthPickCommon'){
+        renderMonthDayChips([1, 15, 28]);
+        return;
+      }
+
+      if(e.target.id === 'fmMonthClearAll'){
+        renderMonthDayChips([]);
+        return;
+      }
+
+      if(e.target.id === 'fmAddDate'){
+        var dates = collectDates();
+        dates.push('');
+        renderDateRows(dates);
+        return;
+      }
+
+      var removeBtn = e.target.closest ? e.target.closest('.fmRowRemove') : null;
+      if(removeBtn){
+        var rowNode = removeBtn.closest('.fmRuleRow');
+        if(rowNode && rowNode.parentNode) rowNode.parentNode.removeChild(rowNode);
+        return;
+      }
+
+      var dateRemove = e.target.closest ? e.target.closest('.fmDateRemove') : null;
+      if(dateRemove){
+        var dateRow = dateRemove.closest('.fmDateRow');
+        if(dateRow && dateRow.parentNode) dateRow.parentNode.removeChild(dateRow);
+        if(!document.querySelector('#fmMonDatesRows .fmDateRow')) renderDateRows(['']);
+        return;
+      }
+
+      var chip = e.target.closest ? e.target.closest('#fmMonMonthDaysGrid .fmChip') : null;
+      if(chip){
+        chip.classList.toggle('isActive');
+        chip.setAttribute('aria-pressed', chip.classList.contains('isActive') ? 'true' : 'false');
+        renderMonthDayChips(collectMonthDays());
+      }
+    });
+
+    root.addEventListener('dblclick', function(e){
+      var rowEl = e.target.closest ? e.target.closest('#fmTableBody tr[data-rowid]') : null;
+      if(rowEl){
+        var id = rowEl.getAttribute('data-rowid') || '';
+        state.selectedId = id;
+        renderTable();
+        openDetail(findRowById(id));
+        return;
+      }
+
+      var monEl = e.target.closest ? e.target.closest('.fmMonitorItem[data-flowid]') : null;
+      if(monEl){
+        var fid = monEl.getAttribute('data-flowid') || '';
+        openMonitorEditor(fid);
+      }
+    });
+
+    root.addEventListener('input', function(e){
+      if(e.target.id === 'fmSearch'){
+        state.search = e.target.value || '';
+        renderTable();
+      }
+    });
+
+    root.addEventListener('change', function(e){
+      if(e.target.id === 'fmSender'){
+        state.sender = e.target.value || '';
+        renderTable();
+      }else if(e.target.id === 'fmReceiver'){
+        state.receiver = e.target.value || '';
+        renderTable();
+      }else if(e.target.id === 'fmStatus'){
+        state.status = e.target.value || '';
+        renderTable();
+      }else if(e.target.id === 'fmDateFrom' || e.target.id === 'fmDateTo'){
+        var fromEl = byId('fmDateFrom');
+        var toEl = byId('fmDateTo');
+        var from = fromEl ? String(fromEl.value || '').trim() : '';
+        var to = toEl ? String(toEl.value || '').trim() : '';
+        if(from && to){
+          state.range = { from: from, to: to };
+          refresh().catch(showError);
+        }else{
+          render();
+        }
+      }else if(e.target.id === 'fmMonMode'){
+        syncMonitorModeUi();
+      }
+    });
+  }
+
+  function showError(err){
+    console.error(err);
+    alert('Kunde inte ladda sidan: ' + (err && err.message ? err.message : err));
+  }
+
+  async function boot(){
+    ensureRoot();
+    try{
+      await refresh();
+    }catch(err){
+      showError(err);
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  }else{
+    boot();
+  }
+
+  w.FMClean = { refresh: refresh };
+})(window);

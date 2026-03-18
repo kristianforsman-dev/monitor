@@ -1,0 +1,518 @@
+{
+  "now": "2026-03-10T10:20:00+01:00",
+  "instances": [
+    {
+      "piid": "9001",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T08:10:00+01:00",
+      "completed": "2026-03-10T08:11:00+01:00"
+    },
+    {
+      "piid": "9002",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T10:05:00+01:00",
+      "completed": "2026-03-10T10:06:00+01:00"
+    },
+    {
+      "piid": "9003",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T11:40:00+01:00",
+      "completed": "2026-03-10T11:41:00+01:00"
+    },
+    {
+      "piid": "9004",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T12:10:00+01:00",
+      "completed": "2026-03-10T12:11:00+01:00"
+    },
+    {
+      "piid": "9005",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T12:45:00+01:00",
+      "completed": "2026-03-10T12:46:00+01:00"
+    },
+    {
+      "piid": "9006",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T13:05:00+01:00",
+      "completed": "2026-03-10T13:06:00+01:00"
+    },
+    {
+      "piid": "9007",
+      "sender": "SAP-ECC",
+      "receiver": "RSF",
+      "msgType": "RSFBESTANM",
+      "state": "Finished",
+      "started": "2026-03-10T14:00:00+01:00",
+      "completed": "2026-03-10T14:01:00+01:00"
+    },
+    {
+      "piid": "9101",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:00:00+01:00",
+      "completed": "2026-03-10T09:01:00+01:00"
+    },
+    {
+      "piid": "9102",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:01:00+01:00",
+      "completed": "2026-03-10T09:02:00+01:00"
+    },
+    {
+      "piid": "9103",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:02:00+01:00",
+      "completed": "2026-03-10T09:03:00+01:00"
+    },
+    {
+      "piid": "9104",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:03:00+01:00",
+      "completed": "2026-03-10T09:04:00+01:00"
+    },
+    {
+      "piid": "9105",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:04:00+01:00",
+      "completed": "2026-03-10T09:05:00+01:00"
+    },
+    {
+      "piid": "9106",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:05:00+01:00",
+      "completed": "2026-03-10T09:06:00+01:00"
+    },
+    {
+      "piid": "9107",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:06:00+01:00",
+      "completed": "2026-03-10T09:07:00+01:00"
+    },
+    {
+      "piid": "9108",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:07:00+01:00",
+      "completed": "2026-03-10T09:08:00+01:00"
+    },
+    {
+      "piid": "9109",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:08:00+01:00",
+      "completed": "2026-03-10T09:09:00+01:00"
+    },
+    {
+      "piid": "9110",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:09:00+01:00",
+      "completed": "2026-03-10T09:10:00+01:00"
+    },
+    {
+      "piid": "9111",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:10:00+01:00",
+      "completed": "2026-03-10T09:11:00+01:00"
+    },
+    {
+      "piid": "9112",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:11:00+01:00",
+      "completed": "2026-03-10T09:12:00+01:00"
+    },
+    {
+      "piid": "9113",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:12:00+01:00",
+      "completed": "2026-03-10T09:13:00+01:00"
+    },
+    {
+      "piid": "9114",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:13:00+01:00",
+      "completed": "2026-03-10T09:14:00+01:00"
+    },
+    {
+      "piid": "9115",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:14:00+01:00",
+      "completed": "2026-03-10T09:15:00+01:00"
+    },
+    {
+      "piid": "9116",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:15:00+01:00",
+      "completed": "2026-03-10T09:16:00+01:00"
+    },
+    {
+      "piid": "9117",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:16:00+01:00",
+      "completed": "2026-03-10T09:17:00+01:00"
+    },
+    {
+      "piid": "9118",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:17:00+01:00",
+      "completed": "2026-03-10T09:18:00+01:00"
+    },
+    {
+      "piid": "9119",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:18:00+01:00",
+      "completed": "2026-03-10T09:19:00+01:00"
+    },
+    {
+      "piid": "9120",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:19:00+01:00",
+      "completed": "2026-03-10T09:20:00+01:00"
+    },
+    {
+      "piid": "9121",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:20:00+01:00",
+      "completed": "2026-03-10T09:21:00+01:00"
+    },
+    {
+      "piid": "9122",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:21:00+01:00",
+      "completed": "2026-03-10T09:22:00+01:00"
+    },
+    {
+      "piid": "9123",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:22:00+01:00",
+      "completed": "2026-03-10T09:23:00+01:00"
+    },
+    {
+      "piid": "9124",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:23:00+01:00",
+      "completed": "2026-03-10T09:24:00+01:00"
+    },
+    {
+      "piid": "9125",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:24:00+01:00",
+      "completed": "2026-03-10T09:25:00+01:00"
+    },
+    {
+      "piid": "9126",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:25:00+01:00",
+      "completed": "2026-03-10T09:26:00+01:00"
+    },
+    {
+      "piid": "9127",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:26:00+01:00",
+      "completed": "2026-03-10T09:27:00+01:00"
+    },
+    {
+      "piid": "9128",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:27:00+01:00",
+      "completed": "2026-03-10T09:28:00+01:00"
+    },
+    {
+      "piid": "9129",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:28:00+01:00",
+      "completed": "2026-03-10T09:29:00+01:00"
+    },
+    {
+      "piid": "9130",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:29:00+01:00",
+      "completed": "2026-03-10T09:30:00+01:00"
+    },
+    {
+      "piid": "9131",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:30:00+01:00",
+      "completed": "2026-03-10T09:31:00+01:00"
+    },
+    {
+      "piid": "9132",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:31:00+01:00",
+      "completed": "2026-03-10T09:32:00+01:00"
+    },
+    {
+      "piid": "9133",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:32:00+01:00",
+      "completed": "2026-03-10T09:33:00+01:00"
+    },
+    {
+      "piid": "9134",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:33:00+01:00",
+      "completed": "2026-03-10T09:34:00+01:00"
+    },
+    {
+      "piid": "9135",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:34:00+01:00",
+      "completed": "2026-03-10T09:35:00+01:00"
+    },
+    {
+      "piid": "9136",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:35:00+01:00",
+      "completed": "2026-03-10T09:36:00+01:00"
+    },
+    {
+      "piid": "9137",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:36:00+01:00",
+      "completed": "2026-03-10T09:37:00+01:00"
+    },
+    {
+      "piid": "9138",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:37:00+01:00",
+      "completed": "2026-03-10T09:38:00+01:00"
+    },
+    {
+      "piid": "9139",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:38:00+01:00",
+      "completed": "2026-03-10T09:39:00+01:00"
+    },
+    {
+      "piid": "9140",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:39:00+01:00",
+      "completed": "2026-03-10T09:40:00+01:00"
+    },
+    {
+      "piid": "9141",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:40:00+01:00",
+      "completed": "2026-03-10T09:41:00+01:00"
+    },
+    {
+      "piid": "9142",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:41:00+01:00",
+      "completed": "2026-03-10T09:42:00+01:00"
+    },
+    {
+      "piid": "9143",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:42:00+01:00",
+      "completed": "2026-03-10T09:43:00+01:00"
+    },
+    {
+      "piid": "9144",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:43:00+01:00",
+      "completed": "2026-03-10T09:44:00+01:00"
+    },
+    {
+      "piid": "9145",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:44:00+01:00",
+      "completed": "2026-03-10T09:45:00+01:00"
+    },
+    {
+      "piid": "9146",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:45:00+01:00",
+      "completed": "2026-03-10T09:46:00+01:00"
+    },
+    {
+      "piid": "9147",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:46:00+01:00",
+      "completed": "2026-03-10T09:47:00+01:00"
+    },
+    {
+      "piid": "9148",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:47:00+01:00",
+      "completed": "2026-03-10T09:48:00+01:00"
+    },
+    {
+      "piid": "9149",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:48:00+01:00",
+      "completed": "2026-03-10T09:49:00+01:00"
+    },
+    {
+      "piid": "9150",
+      "sender": "RSF",
+      "receiver": "SAP-ECC",
+      "msgType": "RSFBESTANMIN",
+      "state": "Finished",
+      "started": "2026-03-10T09:49:00+01:00",
+      "completed": "2026-03-10T09:50:00+01:00"
+    }
+  ]
+}

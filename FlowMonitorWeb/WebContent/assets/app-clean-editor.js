@@ -1,0 +1,560 @@
+(function(w){
+  var App = w.FMCleanApp;
+  if(!App) return;
+
+  var Editor = App.MonitorEditor = {};
+  var state = App.state;
+  var Util = App.Util;
+  var Api = App.Api;
+
+  Editor.weekdayLabels = [
+    { v:1, t:'Mån' },
+    { v:2, t:'Tis' },
+    { v:3, t:'Ons' },
+    { v:4, t:'Tor' },
+    { v:5, t:'Fre' },
+    { v:6, t:'Lör' },
+    { v:7, t:'Sön' }
+  ];
+
+  Editor.ensureDom = function(){
+    if(typeof App._origEditorEnsureDom === 'function'){
+      return App._origEditorEnsureDom();
+    }
+  };
+
+  Editor.clearValidation = function(){
+    var invalid = document.querySelectorAll('#fmMonitorBackdrop .fmInvalid');
+    for(var i=0;i<invalid.length;i++) invalid[i].classList.remove('fmInvalid');
+
+    var err = Util.byId('fmMonError');
+    var ok = Util.byId('fmMonSuccess');
+    if(err){ err.hidden = true; err.innerHTML = ''; }
+    if(ok){ ok.hidden = true; ok.textContent = 'Sparat'; }
+  };
+
+  Editor.markInvalid = function(el){
+    if(el) el.classList.add('fmInvalid');
+  };
+
+  Editor.showErrorList = function(errors){
+    var err = Util.byId('fmMonError');
+    if(!err) return;
+    err.hidden = false;
+    err.innerHTML = '<strong>Kontrollera följande:</strong><ul>' +
+      errors.map(function(x){ return '<li>' + Util.esc(x) + '</li>'; }).join('') +
+      '</ul>';
+  };
+
+  Editor.normalizeRule = function(flow){
+    var x = {
+      mode: 'interval',
+      intervals: [],
+      times: [],
+      weekdays: [],
+      monthDays: [],
+      dates: [],
+      expected: '',
+      dueTime: '',
+      carryOverMode: 'sameDay'
+    };
+
+    var sched = (flow && flow.schedule && typeof flow.schedule === 'object') ? flow.schedule : null;
+    if(!sched) return x;
+
+    var t = String(sched.type || '').trim();
+    if(t === 'interval'){
+      x.mode = 'interval';
+      x.intervals = Array.isArray(sched.intervals) ? sched.intervals : [];
+    }else if(t === 'exactTimes' || t === 'exacttimes'){
+      x.mode = 'exactTimes';
+      x.times = Array.isArray(sched.times) ? sched.times : [];
+    }else if(t === 'weekdays'){
+      x.mode = 'weekdays';
+      x.weekdays = Array.isArray(sched.weekdays) ? sched.weekdays : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+    }else if(t === 'monthDays' || t === 'monthdays'){
+      x.mode = 'monthDays';
+      x.monthDays = Array.isArray(sched.monthDays) ? sched.monthDays : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+    }else if(t === 'dates'){
+      x.mode = 'dates';
+      x.dates = Array.isArray(sched.dates) ? sched.dates : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
+    }
+    return x;
+  };
+
+  Editor.renderIntervalRows = function(items){
+    items = Array.isArray(items) ? items : [];
+    var host = Util.byId('fmMonIntervalsGrid');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="interval">'
+        + '  <input class="fmInput fmIntStart" type="time" value="' + Util.esc(it.start || '') + '">'
+        + '  <input class="fmInput fmIntEnd" type="time" value="' + Util.esc(it.end || '') + '">'
+        + '  <input class="fmInput fmIntExpected" type="number" step="1" value="' + Util.esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <input class="fmInput fmIntWarnPct" type="number" step="0.01" value="' + Util.esc(it.warnAtPct == null ? '' : it.warnAtPct) + '">'
+        + '  <input class="fmInput fmIntTolPct" type="number" step="0.01" value="' + Util.esc(it.tolerancePct == null ? '' : it.tolerancePct) + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.renderTimeRows = function(items){
+    items = Array.isArray(items) ? items : [];
+    var host = Util.byId('fmMonTimesGrid');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i] || {};
+      html += ''
+        + '<div class="fmRuleRow" data-kind="time">'
+        + '  <input class="fmInput fmTimeAt" type="time" value="' + Util.esc(it.time || '') + '">'
+        + '  <input class="fmInput fmTimeExpected" type="number" step="1" value="' + Util.esc(it.expected == null ? '' : it.expected) + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmRowRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.renderWeekdayChecks = function(values){
+    values = Array.isArray(values) ? values : [];
+    var host = Util.byId('fmMonWeekdaysChecks');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<Editor.weekdayLabels.length;i++){
+      var it = Editor.weekdayLabels[i];
+      var checked = values.indexOf(it.v) !== -1 ? ' checked' : '';
+      html += '<label class="fmCheck"><input type="checkbox" class="fmWeekdayChk" value="' + it.v + '"' + checked + '> ' + it.t + '</label>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.renderMonthDayChips = function(values){
+    values = Array.isArray(values) ? values.slice() : [];
+    values = values.map(function(x){ return Number(x); }).filter(function(x){ return x >= 1 && x <= 31; });
+    values.sort(function(a,b){ return a-b; });
+    state.editorDraft.monthDays = values.slice();
+
+    var host = Util.byId('fmMonMonthDaysGrid');
+    var summary = Util.byId('fmMonMonthDaysSummary');
+    if(!host) return;
+
+    var html = '';
+    for(var d=1; d<=31; d++){
+      var selected = values.indexOf(d) !== -1;
+      html += ''
+        + '<button type="button" class="fmBtn fmChip' + (selected ? ' isActive' : '') + '" data-day="' + d + '" aria-pressed="' + (selected ? 'true' : 'false') + '">'
+        + '  <span class="fmChipLabel">' + d + '</span>'
+        + '</button>';
+    }
+    host.innerHTML = html;
+
+    if(summary){
+      summary.textContent = values.length ? ('Valda dagar: ' + values.join(', ')) : 'Inga månadsdagar valda';
+    }
+  };
+
+  Editor.renderDateRows = function(values){
+    values = Array.isArray(values) ? values.slice() : [];
+    if(!values.length) values = [''];
+
+    var host = Util.byId('fmMonDatesRows');
+    if(!host) return;
+
+    var html = '';
+    for(var i=0;i<values.length;i++){
+      html += ''
+        + '<div class="fmDateRow">'
+        + '  <input type="date" class="fmInput fmDateVal" value="' + Util.esc(values[i] || '') + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmDateRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
+
+  Editor.collectIntervals = function(){
+    var host = Util.byId('fmMonIntervalsGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="interval"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        start: (r.querySelector('.fmIntStart') || {}).value || '',
+        end: (r.querySelector('.fmIntEnd') || {}).value || '',
+        expected: Number(((r.querySelector('.fmIntExpected') || {}).value) || 0),
+        warnAtPct: Number(((r.querySelector('.fmIntWarnPct') || {}).value) || 0),
+        tolerancePct: Number(((r.querySelector('.fmIntTolPct') || {}).value) || 0)
+      });
+    }
+    return out;
+  };
+
+  Editor.collectTimes = function(){
+    var host = Util.byId('fmMonTimesGrid');
+    if(!host) return [];
+    var rows = host.querySelectorAll('.fmRuleRow[data-kind="time"]');
+    var out = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i];
+      out.push({
+        time: (r.querySelector('.fmTimeAt') || {}).value || '',
+        expected: Number(((r.querySelector('.fmTimeExpected') || {}).value) || 0)
+      });
+    }
+    return out;
+  };
+
+  Editor.collectWeekdays = function(){
+    var nodes = document.querySelectorAll('#fmMonWeekdaysChecks .fmWeekdayChk:checked');
+    var out = [];
+    for(var i=0;i<nodes.length;i++) out.push(Number(nodes[i].value));
+    return out;
+  };
+
+  Editor.collectMonthDays = function(){
+    return Array.isArray(state.editorDraft.monthDays)
+      ? state.editorDraft.monthDays.slice().sort(function(a,b){ return a-b; })
+      : [];
+  };
+
+  Editor.collectDates = function(){
+    var nodes = document.querySelectorAll('#fmMonDatesRows .fmDateVal');
+    var out = [];
+    for(var i=0;i<nodes.length;i++){
+      var v = String(nodes[i].value || '').trim();
+      if(v) out.push(v);
+    }
+    return out;
+  };
+
+  Editor.toggle = function(id, yes){
+    var el = Util.byId(id);
+    if(el) el.style.display = yes ? '' : 'none';
+  };
+
+  Editor.syncModeUi = function(){
+    var mode = String((Util.byId('fmMonMode') || {}).value || 'interval');
+    Editor.toggle('fmMonIntervalsWrap', mode === 'interval');
+    Editor.toggle('fmMonTimesWrap', mode === 'exactTimes');
+    Editor.toggle('fmMonExpectedWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    Editor.toggle('fmMonDueTimeWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    Editor.toggle('fmMonCarryWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    Editor.toggle('fmMonWeekdaysWrap', mode === 'weekdays');
+    Editor.toggle('fmMonMonthDaysWrap', mode === 'monthDays');
+    Editor.toggle('fmMonDatesWrap', mode === 'dates');
+  };
+
+  Editor.validate = function(){
+    Editor.clearValidation();
+
+    var errors = [];
+    var senderEl = Util.byId('fmMonSender');
+    var receiverEl = Util.byId('fmMonReceiver');
+    var msgTypeEl = Util.byId('fmMonMsgType');
+    var expectedEl = Util.byId('fmMonExpected');
+    var dueTimeEl = Util.byId('fmMonDueTime');
+    var mode = String((Util.byId('fmMonMode') || {}).value || 'interval');
+
+    var sender = String((senderEl || {}).value || '').trim();
+    var receiver = String((receiverEl || {}).value || '').trim();
+    var msgType = String((msgTypeEl || {}).value || '').trim();
+
+    if(!sender){ errors.push('Avsändare måste anges.'); Editor.markInvalid(senderEl); }
+    if(!receiver){ errors.push('Mottagare måste anges.'); Editor.markInvalid(receiverEl); }
+    if(!msgType){ errors.push('Meddelandetyp måste anges.'); Editor.markInvalid(msgTypeEl); }
+
+    if(mode === 'interval'){
+      var intervals = Editor.collectIntervals();
+      if(!intervals.length){
+        errors.push('Minst ett intervall måste finnas.');
+        Editor.markInvalid(Util.byId('fmMonIntervalsGrid'));
+      }
+      for(var i=0;i<intervals.length;i++){
+        var it = intervals[i];
+        if(!it.start || !it.end){ errors.push('Alla intervall måste ha start och slut.'); break; }
+        if(it.start >= it.end){ errors.push('Intervall måste ha starttid före sluttid.'); break; }
+        if(!(it.expected > 0)){ errors.push('Förväntat antal i intervall måste vara större än 0.'); break; }
+      }
+    } else if(mode === 'exactTimes'){
+      var times = Editor.collectTimes();
+      if(!times.length){
+        errors.push('Minst en exakt tid måste finnas.');
+        Editor.markInvalid(Util.byId('fmMonTimesGrid'));
+      }
+      for(var j=0;j<times.length;j++){
+        var tm = times[j];
+        if(!tm.time){ errors.push('Alla exakta tider måste ha ett klockslag.'); break; }
+        if(!(tm.expected > 0)){ errors.push('Förväntat antal för exakt tid måste vara större än 0.'); break; }
+      }
+    } else if(mode === 'weekdays'){
+      if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
+      if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
+      if(!Editor.collectWeekdays().length){ errors.push('Välj minst en veckodag.'); Editor.markInvalid(Util.byId('fmMonWeekdaysChecks')); }
+    } else if(mode === 'monthDays'){
+      if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
+      if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
+      if(!Editor.collectMonthDays().length){ errors.push('Välj minst en månadsdag.'); Editor.markInvalid(Util.byId('fmMonMonthDaysGrid')); }
+    } else if(mode === 'dates'){
+      if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
+      if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
+      if(!Editor.collectDates().length){ errors.push('Välj minst ett datum.'); Editor.markInvalid(Util.byId('fmMonDatesRows')); }
+    }
+
+    if(errors.length){
+      Editor.showErrorList(errors);
+      return false;
+    }
+    return true;
+  };
+
+  Editor.open = async function(flowId){
+    Editor.ensureDom();
+    try{
+      Util.hideLegacyDetails();
+
+      var cfg = await Api.loadMonitoringConfig();
+      var isNew = (flowId === '__NEW__');
+      var flow = null;
+
+      if(!isNew){
+        for(var i=0;i<cfg.flows.length;i++){
+          if(String(cfg.flows[i].flowId || '') === String(flowId)){
+            flow = cfg.flows[i];
+            break;
+          }
+        }
+        if(!flow) throw new Error('Kunde inte hitta bevakning för ' + flowId);
+      }else{
+        flow = {
+          flowId:'',
+          name:'',
+          enabled:true,
+          schedule:{ type:'interval', intervals:[{ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 }] }
+        };
+      }
+
+      var n = Editor.normalizeRule(flow);
+      var parts = String(flow.flowId || '').split('||');
+
+      state.monitoringConfig = cfg;
+      state.editingFlowId = flowId;
+      state.editorDraft.weekdays = Array.isArray(n.weekdays) ? n.weekdays.slice() : [];
+      state.editorDraft.monthDays = Array.isArray(n.monthDays) ? n.monthDays.slice() : [];
+      state.editorDraft.dates = Array.isArray(n.dates) ? n.dates.slice() : [];
+
+      Util.byId('fmMonitorTitle').textContent = isNew ? 'Ny bevakning' : 'Redigera bevakning';
+      Util.byId('fmMonSender').value = parts[0] || '';
+      Util.byId('fmMonReceiver').value = parts[1] || '';
+      Util.byId('fmMonMsgType').value = parts.slice(2).join('||') || '';
+      Util.byId('fmMonName').value = flow.name || '';
+      Util.byId('fmMonEnabled').checked = flow.enabled !== false;
+      Util.byId('fmMonMode').value = n.mode;
+      Util.byId('fmMonWarnLead').value = flow.warningLeadMinutes == null ? '' : String(flow.warningLeadMinutes);
+      Util.byId('fmMonErrorGrace').value = flow.errorGraceMinutes == null ? '' : String(flow.errorGraceMinutes);
+      Util.byId('fmMonExpected').value = n.expected;
+      Util.byId('fmMonDueTime').value = n.dueTime || '';
+      Util.byId('fmMonCarry').value = n.carryOverMode || 'sameDay';
+
+      Editor.renderIntervalRows((n.intervals && n.intervals.length) ? n.intervals : [{ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 }]);
+      Editor.renderTimeRows((n.times && n.times.length) ? n.times : [{ time:'', expected:0 }]);
+      Editor.renderWeekdayChecks(state.editorDraft.weekdays);
+      Editor.renderMonthDayChips(state.editorDraft.monthDays);
+      Editor.renderDateRows(state.editorDraft.dates);
+
+      Editor.clearValidation();
+      Editor.syncModeUi();
+
+      Util.byId('fmMonitorBackdrop').hidden = false;
+      Util.byId('fmMonSender').focus();
+    } catch (e){
+      alert('Kunde inte öppna editor: ' + (e && e.message ? e.message : e));
+    }
+  };
+
+  Editor.close = function(){
+    var b = Util.byId('fmMonitorBackdrop');
+    if(b) b.hidden = true;
+    state.editingFlowId = '';
+    state.monitoringConfig = null;
+    Editor.clearValidation();
+  };
+
+  Editor.save = async function(){
+    if(!Editor.validate()) return;
+
+    var cfg = state.monitoringConfig;
+    var flowId = state.editingFlowId;
+    var isNew = (flowId === '__NEW__');
+    if(!cfg) throw new Error('Ingen aktiv config');
+
+    cfg.flows = Array.isArray(cfg.flows) ? cfg.flows : [];
+
+    var flow = null;
+    if(isNew){
+      flow = {};
+      cfg.flows.push(flow);
+    }else{
+      for(var i=0;i<cfg.flows.length;i++){
+        if(String(cfg.flows[i].flowId || '') === String(flowId)){
+          flow = cfg.flows[i];
+          break;
+        }
+      }
+      if(!flow) throw new Error('Kunde inte hitta flow i config');
+    }
+
+    var sender = String(Util.byId('fmMonSender').value || '').trim();
+    var receiver = String(Util.byId('fmMonReceiver').value || '').trim();
+    var msgType = String(Util.byId('fmMonMsgType').value || '').trim();
+
+    flow.flowId = sender + '||' + receiver + '||' + msgType;
+    flow.name = String(Util.byId('fmMonName').value || '').trim();
+    flow.enabled = !!Util.byId('fmMonEnabled').checked;
+
+    var warnLeadRaw = Util.byId('fmMonWarnLead').value;
+    var errGraceRaw = Util.byId('fmMonErrorGrace').value;
+    flow.warningLeadMinutes = warnLeadRaw === '' ? null : Number(warnLeadRaw);
+    flow.errorGraceMinutes = errGraceRaw === '' ? null : Number(errGraceRaw);
+
+    var mode = String(Util.byId('fmMonMode').value || 'interval');
+    var schedule = { type: mode };
+
+    if(mode === 'interval'){
+      schedule.intervals = Editor.collectIntervals().filter(function(x){ return x.start && x.end && x.expected > 0; });
+    }else if(mode === 'exactTimes'){
+      schedule.times = Editor.collectTimes().filter(function(x){ return x.time && x.expected > 0; });
+    }else if(mode === 'weekdays'){
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.weekdays = Editor.collectWeekdays();
+    }else if(mode === 'monthDays'){
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.monthDays = Editor.collectMonthDays();
+    }else if(mode === 'dates'){
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.dates = Editor.collectDates();
+    }
+
+    flow.schedule = schedule;
+
+    var saveBtn = Util.byId('fmMonitorSave');
+    var ok = Util.byId('fmMonSuccess');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Sparar...';
+
+    try{
+      await Api.saveMonitoringConfig(cfg);
+      if(ok){ ok.hidden = false; ok.textContent = 'Sparat'; }
+      if(App.refresh) await App.refresh();
+      Editor.close();
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Spara';
+    }
+  };
+
+  Editor.bind = function(){
+    Editor.ensureDom();
+    var root = Util.byId('fmMonitorBackdrop');
+    if(!root || root.__wiredEditorModule) return;
+    root.__wiredEditorModule = true;
+
+    root.addEventListener('click', function(e){
+      if(e.target.id === 'fmMonitorCloseX' || e.target.id === 'fmMonitorCancel' || e.target.id === 'fmMonitorBackdrop'){
+        if(e.target.id === 'fmMonitorBackdrop' && e.target !== root) return;
+        Editor.close();
+        return;
+      }
+
+      if(e.target.id === 'fmMonitorSave'){
+        Editor.save().catch(function(err){
+          Editor.showErrorList([String(err && err.message ? err.message : err)]);
+        });
+        return;
+      }
+
+      if(e.target.id === 'fmAddInterval'){
+        var intervals = Editor.collectIntervals();
+        intervals.push({ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 });
+        Editor.renderIntervalRows(intervals);
+        return;
+      }
+
+      if(e.target.id === 'fmAddTime'){
+        var times = Editor.collectTimes();
+        times.push({ time:'', expected:0 });
+        Editor.renderTimeRows(times);
+        return;
+      }
+
+      if(e.target.id === 'fmAddDate'){
+        var dates = Editor.collectDates();
+        dates.push('');
+        Editor.renderDateRows(dates);
+        return;
+      }
+
+      if(e.target.id === 'fmMonthPickCommon'){
+        state.editorDraft.monthDays = [1, 15, 28];
+        Editor.renderMonthDayChips(state.editorDraft.monthDays);
+        return;
+      }
+
+      if(e.target.id === 'fmMonthClearAll'){
+        state.editorDraft.monthDays = [];
+        Editor.renderMonthDayChips(state.editorDraft.monthDays);
+        return;
+      }
+
+      var removeBtn = e.target.closest ? e.target.closest('.fmRowRemove') : null;
+      if(removeBtn){
+        var rowNode = removeBtn.closest('.fmRuleRow');
+        if(rowNode && rowNode.parentNode) rowNode.parentNode.removeChild(rowNode);
+        return;
+      }
+
+      var dateRemove = e.target.closest ? e.target.closest('.fmDateRemove') : null;
+      if(dateRemove){
+        var dateRow = dateRemove.closest('.fmDateRow');
+        if(dateRow && dateRow.parentNode) dateRow.parentNode.removeChild(dateRow);
+        if(!document.querySelector('#fmMonDatesRows .fmDateRow')) Editor.renderDateRows(['']);
+        return;
+      }
+
+      var chip = e.target.closest ? e.target.closest('#fmMonMonthDaysGrid .fmChip') : null;
+      if(chip){
+        var day = Number(chip.getAttribute('data-day') || 0);
+        var cur = Array.isArray(state.editorDraft.monthDays) ? state.editorDraft.monthDays.slice() : [];
+        var idx = cur.indexOf(day);
+        if(idx === -1) cur.push(day);
+        else cur.splice(idx, 1);
+        Editor.renderMonthDayChips(cur);
+        return;
+      }
+    });
+
+    root.addEventListener('change', function(e){
+      if(e.target.id === 'fmMonMode'){
+        Editor.syncModeUi();
+      }
+    });
+  };
+})(window);

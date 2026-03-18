@@ -77,40 +77,93 @@ public class ApiMonitoringServlet extends HttpServlet {
       ZonedDateTime now = ZonedDateTime.now(ZONE);
 
       List<Row> rows = new ArrayList<Row>();
-      if (cfg != null && cfg.flows != null) {
-        for (Flow f : cfg.flows) {
-          if (f == null || !f.enabled) continue;
-          String flowId = t(f.flowId);
-          if (flowId.isEmpty()) continue;
+      boolean builtWithV2 = false;
 
-          String name = t(f.name);
-          if (name.isEmpty()) name = flowId.replace("||", "-");
+      try {
+        se.apendo.flowmon.monitoring.v2.MonitoringConfigLoaderV2.Config cfg2 =
+            se.apendo.flowmon.monitoring.v2.MonitoringConfigLoaderV2.read(cfgFile);
 
-          String mode = t(f.mode);
-          if (mode.isEmpty()) mode = "intervals";
+        if (cfg2 != null && cfg2.rules != null && !cfg2.rules.isEmpty()) {
+          se.apendo.flowmon.monitoring.v2.MonitoringEvaluatorV2 evaluator =
+              new se.apendo.flowmon.monitoring.v2.MonitoringEvaluatorV2();
 
-          EvalResult er;
-          if ("exactTimes".equalsIgnoreCase(mode)) {
-            er = evalExactTimes(now, poller, flowId, f, cfg.defaults);
-          } else {
-            // default: intervals
-            er = evalIntervals(now, poller, flowId, f, cfg.defaults);
-          }
+          se.apendo.flowmon.monitoring.v2.FlowEventCounter counter =
+              new se.apendo.flowmon.monitoring.v2.PollerFlowEventCounterV2(poller, ZONE);
 
-          long finishedToday = (poller == null) ? 0L : poller.getFinishedToday(flowId);
+          for (se.apendo.flowmon.monitoring.v2.FlowMonitoringRule rule : cfg2.rules) {
+            if (rule == null || !rule.enabled) continue;
 
-          // Append "Senast" to details only when we are warning/error (requested by user)
-          if (er != null && er.rank > 1 && poller != null) {
-            java.sql.Timestamp last = poller.getLastFinishedCompleted(flowId);
-            if (last != null) {
-              java.time.LocalTime lt = last.toLocalDateTime().toLocalTime();
-              String ts = lt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-              if (er.details != null && !er.details.isEmpty()) er.details = er.details + ", ";
-              er.details = (er.details == null ? "" : er.details) + "Senast " + ts;
+            String flowId = t(rule.flowId);
+            if (flowId.isEmpty()) continue;
+
+            String name = t(rule.name);
+            if (name.isEmpty()) name = flowId.replace("||", "-");
+
+            se.apendo.flowmon.monitoring.v2.EvaluationResult er =
+                evaluator.evaluate(now, rule, cfg2.defaults, counter);
+
+            String mode = "";
+            if (rule.schedule != null && rule.schedule.type != null) {
+              mode = String.valueOf(rule.schedule.type.name());
+              if ("INTERVAL".equals(mode)) mode = "interval";
+              else if ("EXACT_TIMES".equals(mode)) mode = "exactTimes";
+              else if ("WEEKDAYS".equals(mode)) mode = "weekdays";
+              else if ("MONTH_DAYS".equals(mode)) mode = "monthDays";
+              else if ("DATES".equals(mode)) mode = "dates";
             }
+
+            long finishedToday = (poller == null) ? 0L : poller.getFinishedToday(flowId);
+
+            String status = (er == null || er.status == null) ? "INFO" : String.valueOf(er.status.name());
+            String details = (er == null || er.details == null) ? "" : er.details;
+            String message = (er == null || er.message == null) ? "" : er.message;
+
+            rows.add(new Row(flowId, name, status, mode, details, finishedToday, message));
           }
 
-          rows.add(new Row(flowId, name, er.status, mode, er.details, finishedToday, er.message));
+          builtWithV2 = true;
+        }
+      } catch (Throwable ignoreV2) {
+        builtWithV2 = false;
+        try { ignoreV2.printStackTrace(); } catch (Exception ignore) {}
+      }
+
+      if (!builtWithV2) {
+        if (cfg != null && cfg.flows != null) {
+          for (Flow f : cfg.flows) {
+            if (f == null || !f.enabled) continue;
+            String flowId = t(f.flowId);
+            if (flowId.isEmpty()) continue;
+
+            String name = t(f.name);
+            if (name.isEmpty()) name = flowId.replace("||", "-");
+
+            String mode = t(f.mode);
+            if (mode.isEmpty()) mode = "intervals";
+
+            EvalResult er;
+            if ("exactTimes".equalsIgnoreCase(mode)) {
+              er = evalExactTimes(now, poller, flowId, f, cfg.defaults);
+            } else {
+              // default: intervals
+              er = evalIntervals(now, poller, flowId, f, cfg.defaults);
+            }
+
+            long finishedToday = (poller == null) ? 0L : poller.getFinishedToday(flowId);
+
+            // Append "Senast" to details only when we are warning/error (requested by user)
+            if (er != null && er.rank > 1 && poller != null) {
+              java.sql.Timestamp last = poller.getLastFinishedCompleted(flowId);
+              if (last != null) {
+                java.time.LocalTime lt = last.toLocalDateTime().toLocalTime();
+                String ts = lt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+                if (er.details != null && !er.details.isEmpty()) er.details = er.details + ", ";
+                er.details = (er.details == null ? "" : er.details) + "Senast " + ts;
+              }
+            }
+
+            rows.add(new Row(flowId, name, er.status, mode, er.details, finishedToday, er.message));
+          }
         }
       }
 
