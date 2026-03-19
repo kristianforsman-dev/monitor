@@ -32,16 +32,13 @@
       "enabled": true,
       "warningLeadMinutes": 10,
       "schedule": {
-        "type": "exactTimes",
-        "times": [
-          {
-            "time": "12:00",
-            "expected": 2
-          },
-          {
-            "time": "16:14",
-            "expected": 1
-          }
+        "type": "monthDays",
+        "expected": 2,
+        "dueTime": "09:00",
+        "carryOverMode": "sameDay",
+        "monthDays": [
+          1,
+          2
         ]
       },
       "errorGraceMinutes": null
@@ -52,13 +49,25 @@
       "enabled": true,
       "schedule": {
         "type": "weekdays",
-        "expected": 3,
-        "dueTime": "17:00",
-        "carryOverMode": "sameDay",
-        "weekdays": [
-          1,
-          3,
-          7
+        "rules": [
+          {
+            "weekday": 1,
+            "expected": 3,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "weekday": 3,
+            "expected": 3,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "weekday": 7,
+            "expected": 3,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          }
         ]
       },
       "warningLeadMinutes": null,
@@ -70,16 +79,43 @@
       "enabled": true,
       "schedule": {
         "type": "monthDays",
-        "expected": 2,
-        "dueTime": "17:00",
-        "carryOverMode": "sameDay",
-        "monthDays": [
-          1,
-          2,
-          3,
-          5,
-          11,
-          30
+        "rules": [
+          {
+            "day": 1,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 2,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 3,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 5,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 11,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 30,
+            "expected": 2,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          }
         ]
       },
       "warningLeadMinutes": null,
@@ -91,12 +127,19 @@
       "enabled": true,
       "schedule": {
         "type": "dates",
-        "expected": 1,
-        "dueTime": "17:00",
-        "carryOverMode": "sameDay",
-        "dates": [
-          "2026-03-13",
-          "2026-03-12"
+        "rules": [
+          {
+            "date": "2026-03-13",
+            "expected": 1,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "date": "2026-03-12",
+            "expected": 1,
+            "dueTime": "17:00",
+            "carryOverMode": "sameDay"
+          }
         ]
       },
       "warningLeadMinutes": null,
@@ -181,13 +224,42 @@
       "errorGraceMinutes": null,
       "schedule": {
         "type": "monthDays",
+        "rules": [
+          {
+            "day": 5,
+            "expected": 2,
+            "dueTime": "07:37",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 13,
+            "expected": 2,
+            "dueTime": "07:37",
+            "carryOverMode": "sameDay"
+          },
+          {
+            "day": 14,
+            "expected": 2,
+            "dueTime": "07:37",
+            "carryOverMode": "sameDay"
+          }
+        ]
+      }
+    },
+    {},
+    {
+      "flowId": "FLOW||SAP-ECC||AB",
+      "name": "",
+      "enabled": true,
+      "warningLeadMinutes": null,
+      "errorGraceMinutes": null,
+      "schedule": {
+        "type": "monthDays",
         "expected": 2,
-        "dueTime": "07:37",
+        "dueTime": "",
         "carryOverMode": "sameDay",
         "monthDays": [
-          5,
-          13,
-          14
+          1
         ]
       }
     }

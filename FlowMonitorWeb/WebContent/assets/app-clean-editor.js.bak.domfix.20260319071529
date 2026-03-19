@@ -18,90 +18,9 @@
   ];
 
   Editor.ensureDom = function(){
-    var backdrop = Util.byId('fmMonitorBackdrop');
-    if(!backdrop) return;
-    if(backdrop.__editorDomOwned) return;
-
-    backdrop.innerHTML = ''
-      + '<aside class="fmDrawer fmEditorDrawer">'
-      + '  <div class="fmDrawerHead">'
-      + '    <div id="fmMonitorTitle" class="fmDrawerTitle">Redigera bevakning</div>'
-      + '    <button type="button" id="fmMonitorCloseX" class="fmBtn fmBtnGhost">Stäng</button>'
-      + '  </div>'
-      + '  <div class="fmDrawerBody">'
-      + '    <div class="fmEditorGrid">'
-      + '      <label class="fmField"><span>Avsändare</span><input id="fmMonSender" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Mottagare</span><input id="fmMonReceiver" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Meddelandetyp</span><input id="fmMonMsgType" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Namn</span><input id="fmMonName" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Typ</span>'
-      + '        <select id="fmMonMode" class="fmSelect">'
-      + '          <option value="interval">Intervall</option>'
-      + '          <option value="exactTimes">Exakta tider</option>'
-      + '          <option value="weekdays">Veckodagar</option>'
-      + '          <option value="monthDays">Månadsdagar</option>'
-      + '          <option value="dates">Datum</option>'
-      + '        </select>'
-      + '      </label>'
-      + '      <label class="fmField fmFieldSwitch"><span>Aktiv bevakning</span><input id="fmMonEnabled" type="checkbox"></label>'
-      + '      <label class="fmField"><span>Varning före (min)</span><input id="fmMonWarnLead" class="fmInput" type="number" step="1"></label>'
-      + '      <label class="fmField"><span>Felmarginal efter (min)</span><input id="fmMonErrorGrace" class="fmInput" type="number" step="1"></label>'
-
-      + '      <label id="fmMonExpectedWrap" class="fmField" style="display:none"><span>Förväntat antal</span><input id="fmMonExpected" class="fmInput" type="number" step="1"></label>'
-      + '      <label id="fmMonDueTimeWrap" class="fmField" style="display:none"><span>Förfallotid</span><input id="fmMonDueTime" class="fmInput" type="time"></label>'
-      + '      <label id="fmMonCarryWrap" class="fmField" style="display:none"><span>Hantering efter förfall</span>'
-      + '        <select id="fmMonCarry" class="fmSelect">'
-      + '          <option value="sameDay">sameDay</option>'
-      + '          <option value="nextBusinessDayMorning">nextBusinessDayMorning</option>'
-      + '        </select>'
-      + '      </label>'
-
-      + '      <div id="fmMonIntervalsWrap" class="fmField fmFieldWide">'
-      + '        <span>Intervallregler</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrInterval"><span>Start</span><span>Slut</span><span>Förväntat</span><span>Varn %</span><span>Tol %</span><span></span></div>'
-      + '        <div id="fmMonIntervalsGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddInterval" class="fmBtn fmBtnGhost">Lägg till intervall</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonTimesWrap" class="fmField fmFieldWide">'
-      + '        <span>Exakta tider</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrTime"><span>Tid</span><span>Förväntat</span><span></span></div>'
-      + '        <div id="fmMonTimesGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddTime" class="fmBtn fmBtnGhost">Lägg till tid</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonWeekdaysWrap" class="fmField fmFieldWide">'
-      + '        <span>Veckodagar</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrWeekday"><span>Veckodag</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonWeekdaysGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddWeekday" class="fmBtn fmBtnGhost">Lägg till veckodag</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonMonthDaysWrap" class="fmField fmFieldWide">'
-      + '        <span>Månadsdagar</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrMonthDay"><span>Dag</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonMonthDaysGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddMonthDay" class="fmBtn fmBtnGhost">Lägg till månadsdag</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonDatesWrap" class="fmField fmFieldWide">'
-      + '        <span>Datum</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrDate"><span>Datum</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonDatesRows" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddDate" class="fmBtn fmBtnGhost">Lägg till datum</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonError" class="fmAlert fmAlertError" hidden></div>'
-      + '      <div id="fmMonSuccess" class="fmAlert fmAlertOk" hidden>Sparat</div>'
-      + '    </div>'
-      + '  </div>'
-      + '  <div class="fmDrawerFoot">'
-      + '    <button type="button" id="fmMonitorCancel" class="fmBtn fmBtnGhost">Avbryt</button>'
-      + '    <button type="button" id="fmMonitorSave" class="fmBtn">Spara</button>'
-      + '  </div>'
-      + '</aside>';
-
-    backdrop.__editorDomOwned = true;
+    if(typeof App._origEditorEnsureDom === 'function'){
+      return App._origEditorEnsureDom();
+    }
   };
 
   Editor.clearValidation = function(){
@@ -720,18 +639,4 @@
       }
     });
   };
-
-  function __fmEditorAutoBoot(){
-    try{
-      Editor.ensureDom();
-      Editor.bind();
-    }catch(e){}
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', __fmEditorAutoBoot);
-  }else{
-    __fmEditorAutoBoot();
-  }
-
 })(window);

@@ -18,90 +18,9 @@
   ];
 
   Editor.ensureDom = function(){
-    var backdrop = Util.byId('fmMonitorBackdrop');
-    if(!backdrop) return;
-    if(backdrop.__editorDomOwned) return;
-
-    backdrop.innerHTML = ''
-      + '<aside class="fmDrawer fmEditorDrawer">'
-      + '  <div class="fmDrawerHead">'
-      + '    <div id="fmMonitorTitle" class="fmDrawerTitle">Redigera bevakning</div>'
-      + '    <button type="button" id="fmMonitorCloseX" class="fmBtn fmBtnGhost">Stäng</button>'
-      + '  </div>'
-      + '  <div class="fmDrawerBody">'
-      + '    <div class="fmEditorGrid">'
-      + '      <label class="fmField"><span>Avsändare</span><input id="fmMonSender" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Mottagare</span><input id="fmMonReceiver" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Meddelandetyp</span><input id="fmMonMsgType" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Namn</span><input id="fmMonName" class="fmInput" type="text"></label>'
-      + '      <label class="fmField"><span>Typ</span>'
-      + '        <select id="fmMonMode" class="fmSelect">'
-      + '          <option value="interval">Intervall</option>'
-      + '          <option value="exactTimes">Exakta tider</option>'
-      + '          <option value="weekdays">Veckodagar</option>'
-      + '          <option value="monthDays">Månadsdagar</option>'
-      + '          <option value="dates">Datum</option>'
-      + '        </select>'
-      + '      </label>'
-      + '      <label class="fmField fmFieldSwitch"><span>Aktiv bevakning</span><input id="fmMonEnabled" type="checkbox"></label>'
-      + '      <label class="fmField"><span>Varning före (min)</span><input id="fmMonWarnLead" class="fmInput" type="number" step="1"></label>'
-      + '      <label class="fmField"><span>Felmarginal efter (min)</span><input id="fmMonErrorGrace" class="fmInput" type="number" step="1"></label>'
-
-      + '      <label id="fmMonExpectedWrap" class="fmField" style="display:none"><span>Förväntat antal</span><input id="fmMonExpected" class="fmInput" type="number" step="1"></label>'
-      + '      <label id="fmMonDueTimeWrap" class="fmField" style="display:none"><span>Förfallotid</span><input id="fmMonDueTime" class="fmInput" type="time"></label>'
-      + '      <label id="fmMonCarryWrap" class="fmField" style="display:none"><span>Hantering efter förfall</span>'
-      + '        <select id="fmMonCarry" class="fmSelect">'
-      + '          <option value="sameDay">sameDay</option>'
-      + '          <option value="nextBusinessDayMorning">nextBusinessDayMorning</option>'
-      + '        </select>'
-      + '      </label>'
-
-      + '      <div id="fmMonIntervalsWrap" class="fmField fmFieldWide">'
-      + '        <span>Intervallregler</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrInterval"><span>Start</span><span>Slut</span><span>Förväntat</span><span>Varn %</span><span>Tol %</span><span></span></div>'
-      + '        <div id="fmMonIntervalsGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddInterval" class="fmBtn fmBtnGhost">Lägg till intervall</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonTimesWrap" class="fmField fmFieldWide">'
-      + '        <span>Exakta tider</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrTime"><span>Tid</span><span>Förväntat</span><span></span></div>'
-      + '        <div id="fmMonTimesGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddTime" class="fmBtn fmBtnGhost">Lägg till tid</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonWeekdaysWrap" class="fmField fmFieldWide">'
-      + '        <span>Veckodagar</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrWeekday"><span>Veckodag</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonWeekdaysGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddWeekday" class="fmBtn fmBtnGhost">Lägg till veckodag</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonMonthDaysWrap" class="fmField fmFieldWide">'
-      + '        <span>Månadsdagar</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrMonthDay"><span>Dag</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonMonthDaysGrid" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddMonthDay" class="fmBtn fmBtnGhost">Lägg till månadsdag</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonDatesWrap" class="fmField fmFieldWide">'
-      + '        <span>Datum</span>'
-      + '        <div class="fmRuleHdr fmRuleHdrDate"><span>Datum</span><span>Förväntat</span><span>Förfallotid</span><span>Hantering</span><span></span></div>'
-      + '        <div id="fmMonDatesRows" class="fmRulesGrid"></div>'
-      + '        <button type="button" id="fmAddDate" class="fmBtn fmBtnGhost">Lägg till datum</button>'
-      + '      </div>'
-
-      + '      <div id="fmMonError" class="fmAlert fmAlertError" hidden></div>'
-      + '      <div id="fmMonSuccess" class="fmAlert fmAlertOk" hidden>Sparat</div>'
-      + '    </div>'
-      + '  </div>'
-      + '  <div class="fmDrawerFoot">'
-      + '    <button type="button" id="fmMonitorCancel" class="fmBtn fmBtnGhost">Avbryt</button>'
-      + '    <button type="button" id="fmMonitorSave" class="fmBtn">Spara</button>'
-      + '  </div>'
-      + '</aside>';
-
-    backdrop.__editorDomOwned = true;
+    if(typeof App._origEditorEnsureDom === 'function'){
+      return App._origEditorEnsureDom();
+    }
   };
 
   Editor.clearValidation = function(){
@@ -132,9 +51,12 @@
       mode: 'interval',
       intervals: [],
       times: [],
-      weekdayRules: [],
-      monthDayRules: [],
-      dateRules: []
+      weekdays: [],
+      monthDays: [],
+      dates: [],
+      expected: '',
+      dueTime: '',
+      carryOverMode: 'sameDay'
     };
 
     var sched = (flow && flow.schedule && typeof flow.schedule === 'object') ? flow.schedule : null;
@@ -149,13 +71,22 @@
       x.times = Array.isArray(sched.times) ? sched.times : [];
     }else if(t === 'weekdays'){
       x.mode = 'weekdays';
-      x.weekdayRules = Array.isArray(sched.rules) ? sched.rules : [];
+      x.weekdays = Array.isArray(sched.weekdays) ? sched.weekdays : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
     }else if(t === 'monthDays' || t === 'monthdays'){
       x.mode = 'monthDays';
-      x.monthDayRules = Array.isArray(sched.rules) ? sched.rules : [];
+      x.monthDays = Array.isArray(sched.monthDays) ? sched.monthDays : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
     }else if(t === 'dates'){
       x.mode = 'dates';
-      x.dateRules = Array.isArray(sched.rules) ? sched.rules : [];
+      x.dates = Array.isArray(sched.dates) ? sched.dates : [];
+      x.expected = sched.expected == null ? '' : String(sched.expected);
+      x.dueTime = String(sched.dueTime || '');
+      x.carryOverMode = String(sched.carryOverMode || 'sameDay');
     }
     return x;
   };
@@ -197,8 +128,61 @@
     host.innerHTML = html;
   };
 
+  Editor.renderWeekdayChecks = function(values){
+    values = Array.isArray(values) ? values : [];
+    var host = Util.byId('fmMonWeekdaysChecks');
+    if(!host) return;
+    var html = '';
+    for(var i=0;i<Editor.weekdayLabels.length;i++){
+      var it = Editor.weekdayLabels[i];
+      var checked = values.indexOf(it.v) !== -1 ? ' checked' : '';
+      html += '<label class="fmCheck"><input type="checkbox" class="fmWeekdayChk" value="' + it.v + '"' + checked + '> ' + it.t + '</label>';
+    }
+    host.innerHTML = html;
+  };
 
+  Editor.renderMonthDayChips = function(values){
+    values = Array.isArray(values) ? values.slice() : [];
+    values = values.map(function(x){ return Number(x); }).filter(function(x){ return x >= 1 && x <= 31; });
+    values.sort(function(a,b){ return a-b; });
+    state.editorDraft.monthDays = values.slice();
 
+    var host = Util.byId('fmMonMonthDaysGrid');
+    var summary = Util.byId('fmMonMonthDaysSummary');
+    if(!host) return;
+
+    var html = '';
+    for(var d=1; d<=31; d++){
+      var selected = values.indexOf(d) !== -1;
+      html += ''
+        + '<button type="button" class="fmBtn fmChip' + (selected ? ' isActive' : '') + '" data-day="' + d + '" aria-pressed="' + (selected ? 'true' : 'false') + '">'
+        + '  <span class="fmChipLabel">' + d + '</span>'
+        + '</button>';
+    }
+    host.innerHTML = html;
+
+    if(summary){
+      summary.textContent = values.length ? ('Valda dagar: ' + values.join(', ')) : 'Inga månadsdagar valda';
+    }
+  };
+
+  Editor.renderDateRows = function(values){
+    values = Array.isArray(values) ? values.slice() : [];
+    if(!values.length) values = [''];
+
+    var host = Util.byId('fmMonDatesRows');
+    if(!host) return;
+
+    var html = '';
+    for(var i=0;i<values.length;i++){
+      html += ''
+        + '<div class="fmDateRow">'
+        + '  <input type="date" class="fmInput fmDateVal" value="' + Util.esc(values[i] || '') + '">'
+        + '  <button type="button" class="fmBtn fmBtnGhost fmDateRemove">−</button>'
+        + '</div>';
+    }
+    host.innerHTML = html;
+  };
 
 
   Editor.renderWeekdayRows = function(items){
@@ -369,15 +353,16 @@
   };
 
   Editor.collectWeekdays = function(){
-    return Editor.collectWeekdayRows()
-      .map(function(r){ return Number(r.weekday || 0); })
-      .filter(function(x){ return x >= 1 && x <= 7; });
+    var nodes = document.querySelectorAll('#fmMonWeekdaysChecks .fmWeekdayChk:checked');
+    var out = [];
+    for(var i=0;i<nodes.length;i++) out.push(Number(nodes[i].value));
+    return out;
   };
 
   Editor.collectMonthDays = function(){
-    return Editor.collectMonthDayRows()
-      .map(function(r){ return Number(r.day || 0); })
-      .filter(function(x){ return x >= 1 && x <= 31; });
+    return Array.isArray(state.editorDraft.monthDays)
+      ? state.editorDraft.monthDays.slice().sort(function(a,b){ return a-b; })
+      : [];
   };
 
   Editor.collectDates = function(){
@@ -399,11 +384,9 @@
     var mode = String((Util.byId('fmMonMode') || {}).value || 'interval');
     Editor.toggle('fmMonIntervalsWrap', mode === 'interval');
     Editor.toggle('fmMonTimesWrap', mode === 'exactTimes');
-
-    Editor.toggle('fmMonExpectedWrap', false);
-    Editor.toggle('fmMonDueTimeWrap', false);
-    Editor.toggle('fmMonCarryWrap', false);
-
+    Editor.toggle('fmMonExpectedWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    Editor.toggle('fmMonDueTimeWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
+    Editor.toggle('fmMonCarryWrap', mode === 'weekdays' || mode === 'monthDays' || mode === 'dates');
     Editor.toggle('fmMonWeekdaysWrap', mode === 'weekdays');
     Editor.toggle('fmMonMonthDaysWrap', mode === 'monthDays');
     Editor.toggle('fmMonDatesWrap', mode === 'dates');
@@ -454,15 +437,15 @@
     } else if(mode === 'weekdays'){
       if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
       if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
-      if(!Editor.collectWeekdayRows().length){ errors.push('Lägg till minst en veckodagsrad.'); Editor.markInvalid(Util.byId('fmMonWeekdaysGrid')); }
+      if(!Editor.collectWeekdays().length){ errors.push('Välj minst en veckodag.'); Editor.markInvalid(Util.byId('fmMonWeekdaysChecks')); }
     } else if(mode === 'monthDays'){
       if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
       if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
-      if(!Editor.collectMonthDayRows().length){ errors.push('Lägg till minst en månadsdagsrad.'); Editor.markInvalid(Util.byId('fmMonMonthDaysGrid')); }
+      if(!Editor.collectMonthDays().length){ errors.push('Välj minst en månadsdag.'); Editor.markInvalid(Util.byId('fmMonMonthDaysGrid')); }
     } else if(mode === 'dates'){
       if(!(Number((expectedEl || {}).value || 0) > 0)){ errors.push('Förväntat antal måste vara större än 0.'); Editor.markInvalid(expectedEl); }
       if(!String((dueTimeEl || {}).value || '').trim()){ errors.push('Förfallotid måste anges.'); Editor.markInvalid(dueTimeEl); }
-      if(!Editor.collectDateRows().length){ errors.push('Lägg till minst en datumrad.'); Editor.markInvalid(Util.byId('fmMonDatesRows')); }
+      if(!Editor.collectDates().length){ errors.push('Välj minst ett datum.'); Editor.markInvalid(Util.byId('fmMonDatesRows')); }
     }
 
     if(errors.length){
@@ -503,6 +486,9 @@
 
       state.monitoringConfig = cfg;
       state.editingFlowId = flowId;
+      state.editorDraft.weekdays = Array.isArray(n.weekdays) ? n.weekdays.slice() : [];
+      state.editorDraft.monthDays = Array.isArray(n.monthDays) ? n.monthDays.slice() : [];
+      state.editorDraft.dates = Array.isArray(n.dates) ? n.dates.slice() : [];
 
       Util.byId('fmMonitorTitle').textContent = isNew ? 'Ny bevakning' : 'Redigera bevakning';
       Util.byId('fmMonSender').value = parts[0] || '';
@@ -513,16 +499,15 @@
       Util.byId('fmMonMode').value = n.mode;
       Util.byId('fmMonWarnLead').value = flow.warningLeadMinutes == null ? '' : String(flow.warningLeadMinutes);
       Util.byId('fmMonErrorGrace').value = flow.errorGraceMinutes == null ? '' : String(flow.errorGraceMinutes);
-
-      if(Util.byId('fmMonExpected')) Util.byId('fmMonExpected').value = '';
-      if(Util.byId('fmMonDueTime')) Util.byId('fmMonDueTime').value = '';
-      if(Util.byId('fmMonCarry')) Util.byId('fmMonCarry').value = 'sameDay';
+      Util.byId('fmMonExpected').value = n.expected;
+      Util.byId('fmMonDueTime').value = n.dueTime || '';
+      Util.byId('fmMonCarry').value = n.carryOverMode || 'sameDay';
 
       Editor.renderIntervalRows((n.intervals && n.intervals.length) ? n.intervals : [{ start:'', end:'', expected:0, warnAtPct:0.7, tolerancePct:0.05 }]);
       Editor.renderTimeRows((n.times && n.times.length) ? n.times : [{ time:'', expected:0 }]);
-      Editor.renderWeekdayRows((n.weekdayRules && n.weekdayRules.length) ? n.weekdayRules : [{ weekday:1, expected:'', dueTime:'', carryOverMode:'sameDay' }]);
-      Editor.renderMonthDayRows((n.monthDayRules && n.monthDayRules.length) ? n.monthDayRules : [{ day:1, expected:'', dueTime:'', carryOverMode:'sameDay' }]);
-      Editor.renderDateRows((n.dateRules && n.dateRules.length) ? n.dateRules : [{ date:'', expected:'', dueTime:'', carryOverMode:'sameDay' }]);
+      Editor.renderWeekdayChecks(state.editorDraft.weekdays);
+      Editor.renderMonthDayChips(state.editorDraft.monthDays);
+      Editor.renderDateRows(state.editorDraft.dates);
 
       Editor.clearValidation();
       Editor.syncModeUi();
@@ -587,48 +572,20 @@
     }else if(mode === 'exactTimes'){
       schedule.times = Editor.collectTimes().filter(function(x){ return x.time && x.expected > 0; });
     }else if(mode === 'weekdays'){
-    }else if(mode === 'weekdays'){
-      schedule.rules = Editor.collectWeekdayRows()
-        .filter(function(r){
-          return r.weekday >= 1 && r.weekday <= 7 && r.expected > 0 && String(r.dueTime || '').trim();
-        })
-        .map(function(r){
-          return {
-            weekday: Number(r.weekday),
-            expected: Number(r.expected),
-            dueTime: String(r.dueTime || '').trim(),
-            carryOverMode: String(r.carryOverMode || 'sameDay')
-          };
-        });
-      if(!schedule.rules.length) throw new Error('Lägg till minst en giltig veckodagsrad');
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.weekdays = Editor.collectWeekdays();
     }else if(mode === 'monthDays'){
-      schedule.rules = Editor.collectMonthDayRows()
-        .filter(function(r){
-          return r.day >= 1 && r.day <= 31 && r.expected > 0 && String(r.dueTime || '').trim();
-        })
-        .map(function(r){
-          return {
-            day: Number(r.day),
-            expected: Number(r.expected),
-            dueTime: String(r.dueTime || '').trim(),
-            carryOverMode: String(r.carryOverMode || 'sameDay')
-          };
-        });
-      if(!schedule.rules.length) throw new Error('Lägg till minst en giltig månadsdagsrad');
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.monthDays = Editor.collectMonthDays();
     }else if(mode === 'dates'){
-      schedule.rules = Editor.collectDateRows()
-        .filter(function(r){
-          return String(r.date || '').trim() && r.expected > 0 && String(r.dueTime || '').trim();
-        })
-        .map(function(r){
-          return {
-            date: String(r.date || '').trim(),
-            expected: Number(r.expected),
-            dueTime: String(r.dueTime || '').trim(),
-            carryOverMode: String(r.carryOverMode || 'sameDay')
-          };
-        });
-      if(!schedule.rules.length) throw new Error('Lägg till minst en giltig datumrad');
+      schedule.expected = Number(Util.byId('fmMonExpected').value || 0);
+      schedule.dueTime = String(Util.byId('fmMonDueTime').value || '').trim();
+      schedule.carryOverMode = String(Util.byId('fmMonCarry').value || 'sameDay');
+      schedule.dates = Editor.collectDates();
     }
 
     flow.schedule = schedule;
@@ -683,27 +640,24 @@
         return;
       }
 
-      if(e.target.id === 'fmAddWeekday'){
-        var weekdayRows = Editor.collectWeekdayRows();
-        weekdayRows.push({ weekday:1, expected:'', dueTime:'', carryOverMode:'sameDay' });
-        Editor.renderWeekdayRows(weekdayRows);
-        return;
-      }
-
-      if(e.target.id === 'fmAddMonthDay'){
-        var monthRows = Editor.collectMonthDayRows();
-        monthRows.push({ day:1, expected:'', dueTime:'', carryOverMode:'sameDay' });
-        Editor.renderMonthDayRows(monthRows);
-        return;
-      }
-
       if(e.target.id === 'fmAddDate'){
-        var dateRows = Editor.collectDateRows();
-        dateRows.push({ date:'', expected:'', dueTime:'', carryOverMode:'sameDay' });
-        Editor.renderDateRows(dateRows);
+        var dates = Editor.collectDates();
+        dates.push('');
+        Editor.renderDateRows(dates);
         return;
       }
 
+      if(e.target.id === 'fmMonthPickCommon'){
+        state.editorDraft.monthDays = [1, 15, 28];
+        Editor.renderMonthDayChips(state.editorDraft.monthDays);
+        return;
+      }
+
+      if(e.target.id === 'fmMonthClearAll'){
+        state.editorDraft.monthDays = [];
+        Editor.renderMonthDayChips(state.editorDraft.monthDays);
+        return;
+      }
 
       var removeBtn = e.target.closest ? e.target.closest('.fmRowRemove') : null;
       if(removeBtn){
@@ -712,6 +666,24 @@
         return;
       }
 
+      var dateRemove = e.target.closest ? e.target.closest('.fmDateRemove') : null;
+      if(dateRemove){
+        var dateRow = dateRemove.closest('.fmDateRow');
+        if(dateRow && dateRow.parentNode) dateRow.parentNode.removeChild(dateRow);
+        if(!document.querySelector('#fmMonDatesRows .fmDateRow')) Editor.renderDateRows(['']);
+        return;
+      }
+
+      var chip = e.target.closest ? e.target.closest('#fmMonMonthDaysGrid .fmChip') : null;
+      if(chip){
+        var day = Number(chip.getAttribute('data-day') || 0);
+        var cur = Array.isArray(state.editorDraft.monthDays) ? state.editorDraft.monthDays.slice() : [];
+        var idx = cur.indexOf(day);
+        if(idx === -1) cur.push(day);
+        else cur.splice(idx, 1);
+        Editor.renderMonthDayChips(cur);
+        return;
+      }
     });
 
     root.addEventListener('change', function(e){
@@ -720,18 +692,4 @@
       }
     });
   };
-
-  function __fmEditorAutoBoot(){
-    try{
-      Editor.ensureDom();
-      Editor.bind();
-    }catch(e){}
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', __fmEditorAutoBoot);
-  }else{
-    __fmEditorAutoBoot();
-  }
-
 })(window);
